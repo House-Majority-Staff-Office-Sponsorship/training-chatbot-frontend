@@ -23,6 +23,9 @@ training-chatbot-frontend/
 │   ├── layout.tsx          # Root layout with metadata
 │   ├── page.tsx            # Landing / hero page
 │   ├── globals.css         # Global Tailwind styles
+│   ├── api/
+│   │   └── research/
+│   │       └── route.ts    # Server-side API route — proxies POST to backend /research
 │   └── chat/
 │       └── page.tsx        # Full-height chat interface (client component)
 ├── components/
@@ -94,7 +97,7 @@ cp .env.local.example .env.local
 
 | Variable | Description | Default |
 |---|---|---|
-| `NEXT_PUBLIC_BACKEND_URL` | Base URL of the `training-chatbot-backend` API | `http://localhost:8000` |
+| `BACKEND_URL` | Base URL of the `training-chatbot-backend` API (server-side only) | `http://localhost:8000` |
 
 ### Run the Development Server
 
@@ -121,18 +124,32 @@ npm run lint
 
 ## Backend Integration
 
-The frontend sends chat messages to the backend via a single `POST /chat` request:
+The frontend sends chat messages through a Next.js server-side API route (`/api/research`), which proxies the request to the backend. This keeps the backend URL on the server and never exposes it to the browser.
+
+```ts
+// app/api/research/route.ts
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+
+export async function POST(req: NextRequest) {
+  const body = await req.json();
+  const backendRes = await fetch(`${BACKEND_URL}/research`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  // ...
+}
+```
+
+The client calls the Next.js route directly:
 
 ```ts
 // lib/chat.ts
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
-
 export async function sendMessage(
   sessionId: string,
   message: string
 ): Promise<Message> {
-  const response = await fetch(`${BACKEND_URL}/chat`, {
+  const response = await fetch("/api/research", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ session_id: sessionId, message }),

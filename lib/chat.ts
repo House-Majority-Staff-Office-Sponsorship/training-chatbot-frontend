@@ -89,14 +89,11 @@ export function createEmptySession(id: string): ChatSession {
   };
 }
 
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL ?? "http://localhost:8000";
-
 export async function sendMessage(
   sessionId: string,
   message: string
 ): Promise<Message> {
-  const response = await fetch(`${BACKEND_URL}/chat`, {
+  const response = await fetch("/api/research", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ session_id: sessionId, message }),
