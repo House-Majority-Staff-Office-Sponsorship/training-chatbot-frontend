@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3001/api/research";
 
 export async function POST(req: NextRequest) {
   let body: unknown;
@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
 
   let backendRes: Response;
   try {
-    backendRes = await fetch(`${BACKEND_URL}/research`, {
+    backendRes = await fetch(BACKEND_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
