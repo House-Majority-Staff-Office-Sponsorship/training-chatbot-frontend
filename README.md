@@ -35,7 +35,7 @@ training-chatbot-frontend/
 ├── lib/
 │   ├── types.ts            # Message and ChatSession TypeScript interfaces
 │   └── chat.ts             # Mock session data, session helpers, sendMessage()
-├── .env.local.example      # Required environment variable template
+├── .env.example            # Required environment variable template
 ├── next.config.ts
 ├── tailwind.config (via postcss.config.mjs)
 └── package.json
@@ -92,12 +92,12 @@ npm install
 Copy the example file and fill in the backend URL:
 
 ```bash
-cp .env.local.example .env.local
+cp .env.example .env.local
 ```
 
 | Variable | Description | Default |
 |---|---|---|
-| `BACKEND_URL` | Base URL of the `training-chatbot-backend` API (server-side only) | `http://localhost:8000` |
+| `BACKEND_URL` | Full URL of the `training-chatbot-backend` `/api/research` endpoint (server-side only) | `http://localhost:3001/api/research` |
 
 ### Run the Development Server
 
@@ -106,6 +106,15 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+> **Running both repos locally:** The `training-chatbot-backend` is also a Next.js app. Because this frontend already occupies port 3000, start the backend on port 3001:
+>
+> ```bash
+> # in the training-chatbot-backend directory
+> PORT=3001 npm run dev
+> ```
+>
+> With the backend running on port 3001, the default `BACKEND_URL` value (`http://localhost:3001/api/research`) in `.env.example` will work without any changes.
 
 ### Build for Production
 
@@ -128,11 +137,11 @@ The frontend sends chat messages through a Next.js server-side API route (`/api/
 
 ```ts
 // app/api/research/route.ts
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3001/api/research";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const backendRes = await fetch(`${BACKEND_URL}/research`, {
+  const backendRes = await fetch(BACKEND_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
