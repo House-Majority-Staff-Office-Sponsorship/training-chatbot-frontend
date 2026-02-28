@@ -96,7 +96,7 @@ export async function sendMessage(
   const response = await fetch("/api/research", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: sessionId, message }),
+    body: JSON.stringify({ query: message }),
   });
 
   if (!response.ok) {
