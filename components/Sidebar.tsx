@@ -193,7 +193,7 @@ export default function Sidebar({
                           className="text-slate-500 flex-shrink-0"
                         />
                       )}
-                      <p className="text-sm font-medium truncate leading-snug">
+                      <p className="text-sm font-medium truncate leading-snug text-white">
                         {quiz.title}
                       </p>
                     </div>

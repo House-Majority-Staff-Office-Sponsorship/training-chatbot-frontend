@@ -5,6 +5,7 @@ import {
   FileSpreadsheet,
   History,
 } from "lucide-react";
+import { MOCK_DOCUMENTS } from "@/lib/admin";
 
 export default function Home() {
   return (
@@ -226,17 +227,4 @@ const features = [
   },
 ];
 
-const documents = [
-  {
-    title: "Document One",
-  },
-  {
-    title: "Document Two",
-  },
-  {
-    title: "Document Three",
-  },
-  {
-    title: "Document Four",
-  },
-];
+const documents = MOCK_DOCUMENTS.slice(0, 4);
