@@ -12,3 +12,12 @@ export interface ChatSession {
   updatedAt: Date;
   messages: Message[];
 }
+
+export interface QuizSession {
+  id: number;
+  title: string;
+  topic: string;
+  questions: number;
+  completed: boolean;
+  score: number | null;
+}

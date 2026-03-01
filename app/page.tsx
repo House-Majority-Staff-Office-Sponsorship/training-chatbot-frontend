@@ -185,7 +185,10 @@ export default function Home() {
               >
                 Start a conversation
               </Link>
-              <a className="inline-flex items-center justify-center px-15 py-3 border border-slate-200 text-slate-700 text-sm font-medium rounded-md bg-white hover:bg-blue-500 hover:text-white transition-colors">
+              <a
+                href="/quiz"
+                className="inline-flex items-center justify-center px-15 py-3 border border-slate-200 text-slate-700 text-sm font-medium rounded-md bg-white hover:bg-blue-500 hover:text-white transition-colors"
+              >
                 Take a quiz
               </a>
             </div>

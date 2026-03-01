@@ -7,7 +7,10 @@ interface ChatInputProps {
   disabled?: boolean;
 }
 
-export default function ChatInput({ onSend, disabled = false }: ChatInputProps) {
+export default function ChatInput({
+  onSend,
+  disabled = false,
+}: ChatInputProps) {
   const [value, setValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -39,7 +42,7 @@ export default function ChatInput({ onSend, disabled = false }: ChatInputProps) 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-end gap-3 bg-white border border-slate-200 rounded-xl px-4 py-3 shadow-sm"
+      className="flex items-end gap-3 bg-white border border-slate-200 rounded-xl px-4 py-2 shadow-sm"
     >
       <textarea
         ref={textareaRef}
@@ -55,7 +58,7 @@ export default function ChatInput({ onSend, disabled = false }: ChatInputProps) 
       <button
         type="submit"
         disabled={!value.trim() || disabled}
-        className="flex-shrink-0 w-9 h-9 flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
+        className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-lg transition-colors"
         aria-label="Send message"
       >
         <svg

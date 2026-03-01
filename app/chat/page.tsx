@@ -89,6 +89,7 @@ export default function ChatPage() {
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Sidebar */}
       <Sidebar
+        mode="chat"
         sessions={sessions}
         activeSessionId={activeId}
         onSelectSession={handleSelectSession}
