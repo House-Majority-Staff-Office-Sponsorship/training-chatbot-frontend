@@ -53,9 +53,18 @@ export default function Sidebar({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
-          <span className="text-sm font-semibold text-white">
-            House Training Assistant
-          </span>
+          <div className="flex items-center gap-2.5">
+            <img
+              src="https://portal.ehawaii.gov/assets/webp/elements/sliver/seal.webp"
+              alt="Hawaii State Seal"
+              width={40}
+              height={40}
+              className="rounded"
+            />
+            <span className="text-med font-semibold text-white tracking-tight">
+              House Training Assistant
+            </span>
+          </div>
           <button
             onClick={onClose}
             className="text-slate-400 hover:text-white transition-colors p-1 rounded"

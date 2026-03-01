@@ -90,7 +90,7 @@ export default function Home() {
               className="text-3xl font-semibold text-center text-slate-900"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              Built for House staff
+              Built for House Staff
             </h2>
             <p className="text-med text-center font-semibold uppercase tracking-widest text-zinc-500 mb-10">
               Your onboarding companion
