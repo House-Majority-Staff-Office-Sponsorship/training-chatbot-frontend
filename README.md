@@ -154,6 +154,7 @@ cp .env.example .env.local
 | Variable | Description |
 |---|---|
 | `BACKEND_URL` | Base URL of the backend API (server-side only, never exposed to browser) |
+| `BACKEND_API_KEY` | API key sent as `x-api-key` header to the backend (server-side only) |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
 
@@ -187,7 +188,7 @@ All backend requests are proxied through Next.js API routes in `app/api/`. The `
 - `proxyJson(req, path)` — forwards a JSON POST and returns JSON
 - `proxyStream(req, path)` — forwards a POST and pipes the SSE stream back
 
-This keeps the `BACKEND_URL` server-side only and avoids CORS issues in production.
+Both helpers automatically inject the `x-api-key` header from the `BACKEND_API_KEY` environment variable. This keeps the backend URL and API key server-side only — the browser never sees either value.
 
 ---
 
