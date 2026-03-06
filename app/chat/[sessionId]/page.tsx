@@ -122,6 +122,58 @@ export default function ChatSessionPage() {
         let buffer = "";
         let eventType = "";
 
+        function processLine(line: string) {
+          if (line.startsWith("event: ")) {
+            eventType = line.slice(7).trim();
+          } else if (line.startsWith("data: ")) {
+            const raw = line.slice(6);
+            try {
+              const payload = JSON.parse(raw);
+
+              switch (eventType) {
+                case "log":
+                  setLogs((prev) => [...prev, payload]);
+                  break;
+                case "step":
+                  setDeepResult((prev) => ({
+                    ...prev,
+                    [payload.field]: payload.value,
+                  }));
+                  if (payload.field === "answer") {
+                    addAssistantMessage(payload.value);
+                    appendToHistory("user", query);
+                    appendToHistory("assistant", payload.value);
+                  }
+                  break;
+                case "researchers_init":
+                  setResearchers(
+                    payload.labels.map((label: string) => ({
+                      label,
+                      findings: "",
+                      done: false,
+                    }))
+                  );
+                  break;
+                case "researcher_done":
+                  setResearchers((prev) =>
+                    prev.map((r, i) =>
+                      i === payload.index
+                        ? { ...r, findings: payload.value, done: true }
+                        : r
+                    )
+                  );
+                  break;
+                case "error":
+                  setError(payload.error || "Deep research failed");
+                  break;
+              }
+            } catch {
+              // skip malformed JSON
+            }
+            eventType = "";
+          }
+        }
+
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -131,64 +183,21 @@ export default function ChatSessionPage() {
           buffer = lines.pop() ?? "";
 
           for (const line of lines) {
-            if (line.startsWith("event: ")) {
-              eventType = line.slice(7).trim();
-            } else if (line.startsWith("data: ")) {
-              const raw = line.slice(6);
-              try {
-                const payload = JSON.parse(raw);
-
-                switch (eventType) {
-                  case "log":
-                    setLogs((prev) => [...prev, payload]);
-                    break;
-                  case "step":
-                    setDeepResult((prev) => ({
-                      ...prev,
-                      [payload.field]: payload.value,
-                    }));
-                    if (payload.field === "answer") {
-                      addAssistantMessage(payload.value);
-                      appendToHistory("user", query);
-                      appendToHistory("assistant", payload.value);
-                    }
-                    break;
-                  case "researchers_init":
-                    setResearchers(
-                      payload.labels.map((label: string) => ({
-                        label,
-                        findings: "",
-                        done: false,
-                      }))
-                    );
-                    break;
-                  case "researcher_done":
-                    setResearchers((prev) =>
-                      prev.map((r, i) =>
-                        i === payload.index
-                          ? { ...r, findings: payload.value, done: true }
-                          : r
-                      )
-                    );
-                    break;
-                  case "error":
-                    setError(payload.error || "Deep research failed");
-                    break;
-                }
-              } catch {
-                // skip malformed JSON
-              }
-              eventType = "";
-            }
+            processLine(line);
           }
+        }
+
+        // Process any remaining data left in the buffer
+        if (buffer.trim()) {
+          processLine(buffer);
         }
 
         setDeepRunning(false);
         setResearchPanelOpen(true);
         abortRef.current = null;
 
-        // Persist logs + research to Redis after stream completes
-        persistExtras();
+        // Delay persist so React renders first and refs sync via useEffect
+        setTimeout(() => persistExtras(), 300);
       } else {
         const isPro = searchMode === "quick-pro";
         const history = getConversationHistory();
