@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import { proxyStream } from "@/lib/proxy";
+import { proxyJson } from "@/lib/proxy";
 
 export async function POST(req: NextRequest) {
-  return proxyStream(req, "/api/research");
+  return proxyJson(req, "/api/intent");
 }

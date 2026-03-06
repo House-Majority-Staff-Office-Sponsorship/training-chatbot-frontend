@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
   --background: #f5f6f8;
@@ -10,6 +11,8 @@
   --primary-hover: #1d4ed8;
   --border: #e2e8f0;
   --surface: #ffffff;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
 }
 
 @theme inline {
@@ -27,7 +30,7 @@ body {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -50,4 +53,77 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #64748b;
+}
+
+/* ── Chat markdown overrides ── */
+.chat-markdown {
+  & > :first-child { margin-top: 0; }
+  & > :last-child { margin-bottom: 0; }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #0f172a;
+  }
+  h1 { font-size: 1.25rem; }
+  h2 { font-size: 1.1rem; }
+  h3 { font-size: 1rem; }
+
+  p { margin: 0.65em 0; line-height: 1.7; }
+
+  strong { color: #0f172a; }
+
+  ul { margin: 0.65em 0; padding-left: 1.5em; list-style-type: disc; }
+  ol { margin: 0.65em 0; padding-left: 1.5em; list-style-type: decimal; }
+  li { margin: 0.25em 0; line-height: 1.65; }
+  li > ul { list-style-type: circle; margin: 0.2em 0; }
+  li > ul > li > ul { list-style-type: square; }
+  li > ol { margin: 0.2em 0; }
+
+  pre {
+    margin: 0.75em 0;
+    padding: 0.75em 1em;
+    border-radius: 0.5rem;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 0.75rem;
+    overflow-x: auto;
+  }
+  code {
+    color: #2563eb;
+    font-size: 0.85em;
+  }
+  code::before, code::after { content: none; }
+  pre code { color: inherit; font-size: inherit; }
+
+  a { color: #2563eb; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  table { font-size: 0.8rem; border-collapse: collapse; width: 100%; margin: 0.75em 0; }
+  th, td { padding: 0.35em 0.6em; border: 1px solid #e2e8f0; }
+  th { background: #f8fafc; font-weight: 600; }
+
+  hr { margin: 1.25em 0; border-color: #e2e8f0; }
+  blockquote { margin: 0.75em 0; padding-left: 1em; border-left: 3px solid #cbd5e1; color: #475569; }
+
+  /* Sources section at end of answers */
+  h2:last-of-type { margin-top: 2em; padding-top: 1em; border-top: 1px solid #e2e8f0; }
+}
+
+/* ── Deep research step content ── */
+.step-markdown {
+  & > :first-child { margin-top: 0; }
+  & > :last-child { margin-bottom: 0; }
+  p { margin: 0.4em 0; line-height: 1.6; }
+  ul { margin: 0.4em 0; padding-left: 1.25em; list-style-type: disc; }
+  ol { margin: 0.4em 0; padding-left: 1.25em; list-style-type: decimal; }
+  li { margin: 0.15em 0; }
+  li > ul { list-style-type: circle; }
+  li > ol { list-style-type: lower-alpha; }
+  strong { color: #334155; }
+  h1, h2, h3, h4 { margin-top: 0.75em; margin-bottom: 0.3em; font-weight: 600; color: #1e293b; }
+  h1, h2 { font-size: 0.85rem; }
+  h3, h4 { font-size: 0.8rem; }
 }
