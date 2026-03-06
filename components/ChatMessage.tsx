@@ -1,7 +1,16 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Message } from "@/lib/types";
 
 interface ChatMessageProps {
   message: Message;
+}
+
+/** Ensure blank lines before headings and bold-start lines so markdown parses spacing correctly. */
+function normalizeSpacing(text: string): string {
+  return text
+    .replace(/\n(#{1,6}\s)/g, "\n\n$1")
+    .replace(/\n(\*\*[A-Z])/g, "\n\n$1");
 }
 
 function formatTime(date: Date): string {
@@ -15,9 +24,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
-    <div
-      className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}
-    >
+    <div className={`flex gap-3 ${isUser ? "flex-row-reverse" : "flex-row"}`}>
       {/* Avatar */}
       <div
         className={`
@@ -30,18 +37,28 @@ export default function ChatMessage({ message }: ChatMessageProps) {
       </div>
 
       {/* Bubble */}
-      <div className={`max-w-[75%] ${isUser ? "items-end" : "items-start"} flex flex-col gap-1`}>
+      <div
+        className={`max-w-[80%] ${isUser ? "items-end" : "items-start"} flex flex-col gap-1`}
+      >
         <div
           className={`
-            px-4 py-3 rounded-2xl text-sm leading-relaxed
+            rounded-2xl text-sm leading-relaxed
             ${
               isUser
-                ? "bg-blue-600 text-white rounded-tr-sm"
-                : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm"
+                ? "bg-blue-600 text-white rounded-tr-sm px-4 py-3"
+                : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm px-5 py-4"
             }
           `}
         >
-          {message.content}
+          {isUser ? (
+            message.content
+          ) : (
+            <div className="chat-markdown">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {normalizeSpacing(message.content)}
+              </ReactMarkdown>
+            </div>
+          )}
         </div>
         <span className="text-xs text-slate-400 px-1">
           {formatTime(message.timestamp)}

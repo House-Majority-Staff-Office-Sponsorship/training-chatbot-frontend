@@ -7,8 +7,9 @@ interface SidebarProps {
   activeSessionId: string;
   onSelectSession: (id: string) => void;
   onNewChat: () => void;
+  onDeleteSession?: (id: string) => void;
   isOpen: boolean;
-  onClose: () => void;
+  onToggle: () => void;
 }
 
 function formatRelativeDate(date: Date): string {
@@ -22,121 +23,223 @@ function formatRelativeDate(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+function getSessionInitials(title: string): string {
+  const words = title.split(/\s+/).filter(Boolean);
+  if (words.length === 0) return "?";
+  if (words.length === 1) return words[0][0].toUpperCase();
+  return (words[0][0] + words[1][0]).toUpperCase();
+}
+
 export default function Sidebar({
   sessions,
   activeSessionId,
   onSelectSession,
   onNewChat,
+  onDeleteSession,
   isOpen,
-  onClose,
+  onToggle,
 }: SidebarProps) {
   return (
     <>
-      {/* Backdrop (mobile) */}
+      {/* Backdrop (mobile only, when expanded) */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/40 z-20 md:hidden"
-          onClick={onClose}
+          onClick={onToggle}
           aria-hidden="true"
         />
       )}
 
-      {/* Sidebar panel */}
+      {/* Sidebar - always visible, collapses to icon rail on desktop */}
       <aside
         className={`
           fixed md:static inset-y-0 left-0 z-30
-          flex flex-col w-72 bg-[#1a2332] text-slate-300
-          transform transition-transform duration-200 ease-in-out
+          flex flex-col bg-[#1a2332] text-slate-300
+          transition-all duration-200 ease-in-out
+          ${isOpen ? "w-72" : "w-0 md:w-14 overflow-hidden md:overflow-visible"}
           ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-          ${isOpen ? "md:flex" : "md:hidden"}
         `}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
-          <span className="text-sm font-semibold text-white">
-            House Training Assistant
-          </span>
-          <button
-            onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors p-1 rounded"
-            aria-label="Close sidebar"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
-
-        {/* New chat button */}
-        <div className="px-3 py-3">
-          <button
-            onClick={onNewChat}
-            className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-4 w-4 shrink-0"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            New conversation
-          </button>
-        </div>
-
-        {/* Session list */}
-        <nav className="flex-1 overflow-y-auto px-2 pb-4">
-          <p className="px-2 pt-2 pb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
-            Recent
-          </p>
-          <ul className="space-y-0.5">
-            {sessions.map((session) => (
-              <li key={session.id}>
-                <button
-                  onClick={() => onSelectSession(session.id)}
-                  className={`
-                    w-full text-left px-3 py-2.5 rounded-md transition-colors group
-                    ${
-                      session.id === activeSessionId
-                        ? "bg-white/10 text-white"
-                        : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
-                    }
-                  `}
+        {/* Expanded view */}
+        {isOpen ? (
+          <>
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-4 border-b border-white/10 shrink-0">
+              <span className="text-sm font-semibold text-white">
+                House Training Assistant
+              </span>
+              <button
+                onClick={onToggle}
+                className="text-slate-400 hover:text-white transition-colors p-1 rounded"
+                aria-label="Collapse sidebar"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
                 >
-                  <p className="text-sm font-medium truncate leading-snug">
-                    {session.title}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">
-                    {formatRelativeDate(session.updatedAt)}
-                  </p>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+            </div>
 
-        {/* Footer */}
-        <div className="border-t border-white/10 px-4 py-3">
-          <p className="text-xs text-slate-500">Internal use only</p>
-        </div>
+            {/* New chat button */}
+            <div className="px-3 py-3 shrink-0">
+              <button
+                onClick={onNewChat}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 shrink-0"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                New conversation
+              </button>
+            </div>
+
+            {/* Session list */}
+            <nav className="flex-1 overflow-y-auto px-2 pb-4">
+              <p className="px-2 pt-2 pb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
+                Recent
+              </p>
+              <ul className="space-y-0.5">
+                {sessions.map((session) => (
+                  <li key={session.id}>
+                    <div
+                      className={`
+                        relative flex items-center rounded-md transition-colors group
+                        ${
+                          session.id === activeSessionId
+                            ? "bg-white/10 text-white"
+                            : "hover:bg-white/5 text-slate-400 hover:text-slate-200"
+                        }
+                      `}
+                    >
+                      <button
+                        onClick={() => onSelectSession(session.id)}
+                        className="flex-1 text-left px-3 py-2.5 min-w-0"
+                      >
+                        <p className="text-sm font-medium truncate leading-snug">
+                          {session.title}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5 truncate">
+                          {formatRelativeDate(session.updatedAt)}
+                        </p>
+                      </button>
+                      {onDeleteSession && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteSession(session.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 shrink-0 mr-2 p-1 text-slate-500 hover:text-red-400 transition-all rounded"
+                          aria-label={`Delete ${session.title}`}
+                          title="Delete conversation"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            {/* Footer */}
+            <div className="border-t border-white/10 px-4 py-3 shrink-0">
+              <p className="text-xs text-slate-500">Internal use only</p>
+            </div>
+          </>
+        ) : (
+          /* Collapsed icon rail (desktop only) */
+          <div className="hidden md:flex flex-col items-center h-full py-3 gap-1">
+            {/* Expand button */}
+            <button
+              onClick={onToggle}
+              className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors mb-1"
+              aria-label="Expand sidebar"
+              title="Expand sidebar"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+
+            {/* New chat */}
+            <button
+              onClick={onNewChat}
+              className="w-9 h-9 flex items-center justify-center text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              aria-label="New conversation"
+              title="New conversation"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+            </button>
+
+            {/* Divider */}
+            <div className="w-6 border-t border-white/10 my-1" />
+
+            {/* Session icons */}
+            <div className="flex-1 overflow-y-auto flex flex-col items-center gap-1 w-full px-2.5">
+              {sessions.map((session) => (
+                <button
+                  key={session.id}
+                  onClick={() => onSelectSession(session.id)}
+                  className={`w-9 h-9 flex items-center justify-center rounded-lg text-xs font-semibold transition-colors shrink-0 ${
+                    session.id === activeSessionId
+                      ? "bg-white/15 text-white"
+                      : "text-slate-500 hover:text-slate-200 hover:bg-white/5"
+                  }`}
+                  title={session.title}
+                >
+                  {getSessionInitials(session.title)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </aside>
     </>
   );
