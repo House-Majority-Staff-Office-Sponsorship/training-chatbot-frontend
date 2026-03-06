@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
   process.env.BACKEND_URL || "https://training-chatbot-backend.vercel.app";
+const BACKEND_API_KEY = process.env.BACKEND_API_KEY ?? "";
 
 /**
  * Proxies a JSON POST request to the backend and returns the JSON response.
@@ -18,7 +19,10 @@ export async function proxyJson(req: NextRequest, path: string) {
   try {
     backendRes = await fetch(`${BACKEND_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(BACKEND_API_KEY && { "x-api-key": BACKEND_API_KEY }),
+      },
       body: JSON.stringify(body),
     });
   } catch {
@@ -55,7 +59,10 @@ export async function proxyStream(req: NextRequest, path: string) {
   try {
     backendRes = await fetch(`${BACKEND_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(BACKEND_API_KEY && { "x-api-key": BACKEND_API_KEY }),
+      },
       body: JSON.stringify(body),
     });
   } catch {

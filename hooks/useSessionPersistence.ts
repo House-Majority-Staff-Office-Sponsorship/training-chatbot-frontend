@@ -116,9 +116,14 @@ export function useSessionList() {
 
   const updateSessionInList = useCallback(
     (sessionId: string, patch: Partial<ChatSession>) => {
-      setSessions((prev) =>
-        prev.map((s) => (s.id === sessionId ? { ...s, ...patch } : s))
-      );
+      setSessions((prev) => {
+        const exists = prev.some((s) => s.id === sessionId);
+        if (exists) {
+          return prev.map((s) => (s.id === sessionId ? { ...s, ...patch } : s));
+        }
+        // Session not in list (e.g. created before sidebar loaded) — add it
+        return [{ ...makeEmptySession(sessionId), ...patch }, ...prev];
+      });
     },
     []
   );
