@@ -1,6 +1,6 @@
 # Training Chatbot Frontend
 
-A Next.js 15 (App Router) frontend for the House Majority Staff Office training chatbot. Provides a clean landing page and a full chat interface that communicates with the `training-chatbot-backend` API.
+A Next.js frontend for the House Majority Staff Office training chatbot. Features a landing page, multi-mode AI chat interface with intent classification, deep research with live SSE streaming, and persistent sessions via Upstash Redis.
 
 ---
 
@@ -8,10 +8,11 @@ A Next.js 15 (App Router) frontend for the House Majority Staff Office training 
 
 | Layer | Technology |
 |---|---|
-| Framework | [Next.js 15](https://nextjs.org/) (App Router, TypeScript) |
+| Framework | [Next.js 16](https://nextjs.org/) (App Router, TypeScript) |
 | Styling | [Tailwind CSS v4](https://tailwindcss.com/) |
-| Language | TypeScript 5 |
 | Runtime | React 19 |
+| Session Storage | [Upstash Redis](https://upstash.com/) |
+| Markdown | react-markdown + remark-gfm |
 
 ---
 
@@ -20,56 +21,112 @@ A Next.js 15 (App Router) frontend for the House Majority Staff Office training 
 ```
 training-chatbot-frontend/
 ├── app/
-│   ├── layout.tsx          # Root layout with metadata
-│   ├── page.tsx            # Landing / hero page
-│   ├── globals.css         # Global Tailwind styles
+│   ├── layout.tsx                        # Root layout (fonts, metadata)
+│   ├── page.tsx                          # Landing / hero page
+│   ├── globals.css                       # Global Tailwind styles
 │   ├── api/
-│   │   └── research/
-│   │       └── route.ts    # Server-side API route — proxies POST to backend /research
+│   │   ├── intent/route.ts              # Proxy → backend /api/intent
+│   │   ├── conversational/route.ts      # Proxy → backend /api/conversational
+│   │   ├── quick-search/route.ts        # Proxy → backend /api/quick-search
+│   │   ├── quick-search-pro/route.ts    # Proxy → backend /api/quick-search-pro
+│   │   ├── research/route.ts            # Proxy → backend /api/research (SSE stream)
+│   │   └── sessions/
+│   │       ├── route.ts                 # GET list / POST create sessions
+│   │       └── [id]/
+│   │           ├── route.ts             # PUT update / DELETE session
+│   │           └── history/route.ts     # GET conversation history + logs + research
 │   └── chat/
-│       └── page.tsx        # Full-height chat interface (client component)
+│       ├── layout.tsx                   # Shared sidebar + session list provider
+│       ├── page.tsx                     # Redirect to most recent (or new) session
+│       └── [sessionId]/page.tsx         # Chat UI for a single session
 ├── components/
-│   ├── Sidebar.tsx         # Toggleable dark-navy session panel
-│   ├── ChatMessage.tsx     # Individual message bubble (user & assistant)
-│   └── ChatInput.tsx       # Auto-growing textarea with send button
+│   ├── Sidebar.tsx                      # Session list panel with delete
+│   ├── ChatMessage.tsx                  # User/assistant message bubbles (markdown)
+│   ├── ChatInput.tsx                    # Textarea with search mode toggle
+│   ├── IntentConfirmation.tsx           # Confirmation prompt after intent check
+│   ├── AgentLogPanel.tsx                # Slide-out agent activity log
+│   ├── DeepResearchProgress.tsx         # Stepped pipeline progress UI
+│   └── DeepResearchPanel.tsx            # Side panel for research results
+├── hooks/
+│   └── useSessionPersistence.ts         # Redis-backed session state (list + single)
+├── contexts/
+│   └── SessionListContext.tsx           # Syncs session metadata to sidebar
 ├── lib/
-│   ├── types.ts            # Message and ChatSession TypeScript interfaces
-│   └── chat.ts             # Mock session data, session helpers, sendMessage()
-├── .env.example            # Required environment variable template
-├── next.config.ts
-├── tailwind.config (via postcss.config.mjs)
+│   ├── types.ts                         # All TypeScript interfaces
+│   ├── chat.ts                          # Client-side API functions
+│   ├── proxy.ts                         # Server-side proxy helpers (JSON + SSE)
+│   ├── redis.ts                         # Upstash client singleton
+│   └── session-store.ts                # Server-side Redis CRUD for sessions
+├── public/
+│   ├── capitol.png                      # Hero image
+│   └── logo.png                         # Chat empty state logo
+├── .env.example
 └── package.json
 ```
 
 ---
 
-## Pages and Components
+## Pages
 
-### `app/page.tsx` — Landing Page
-Hero section with a headline, dual call-to-action buttons, and a three-column features grid. Links directly to the chat page.
+### `/` — Landing Page
+Hero section with headline, capitol building image, CTA buttons, features grid, training library preview, and footer.
 
-### `app/chat/page.tsx` — Chat Interface
-Full-height layout that manages:
-- Session state (list of conversations, active session)
-- Sending messages to the backend and appending responses
-- Loading/error states with visual feedback
-- Sidebar toggle (auto-closes on mobile after session selection)
+### `/chat` — Chat Router
+Redirects to the most recent session or creates a new one.
 
-### `components/Sidebar.tsx`
-- Dark navy (`#1a2332`) panel, 288 px wide
-- Lists recent sessions with relative timestamps (Today / Yesterday / N days ago)
-- Mobile-aware: renders a backdrop overlay and auto-closes on session selection
-- Controlled via `isOpen` / `onClose` props
+### `/chat/[sessionId]` — Chat Session
+Full chat interface scoped to a single session. Includes:
+- Floating title bar with session name
+- Message history with markdown rendering
+- Search mode toggle (Quick Search / Extensive Thinking / Deep Research)
+- Intent classification on every message (reject, clarify, chat, or confirm)
+- SSE streaming for deep research with live pipeline visualization
+- Agent log panel showing token usage per agent
+- Deep research panel with expandable researcher findings
 
-### `components/ChatMessage.tsx`
-- Right-aligned blue bubbles for user messages
-- Left-aligned white cards with a border for assistant messages
-- Avatar labels ("You" / "AI") and formatted timestamps
+---
 
-### `components/ChatInput.tsx`
-- Auto-growing `<textarea>` capped at 180 px
-- **Enter** sends the message; **Shift+Enter** inserts a newline
-- Disabled state while a response is loading
+## Chat Flow
+
+```
+User sends message
+       │
+       ▼
+  POST /api/intent  (classifies the query)
+       │
+       ├─ "reject"   → show info banner
+       ├─ "clarify"  → show info banner
+       ├─ "chat"     → POST /api/conversational → show answer
+       └─ "confirm"  → show confirmation prompt
+                              │
+                      User confirms
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+        Quick Search    Extensive Thinking  Deep Research
+              │               │               │
+     /api/quick-search  /api/quick-search-pro  /api/research (SSE)
+              │               │               │
+              ▼               ▼               ▼
+         Show answer     Show answer    Stream pipeline
+```
+
+---
+
+## Session Persistence
+
+Sessions are stored in Upstash Redis with no login required. Users are identified by an `anon_id` cookie (HttpOnly, 1 year TTL).
+
+**Redis keys per session:**
+| Key | Type | Contents |
+|---|---|---|
+| `session:{id}` | STRING | Session metadata + messages (JSON) |
+| `session:{id}:history` | STRING | Conversation history for backend context |
+| `session:{id}:logs` | STRING | Agent activity logs |
+| `session:{id}:research` | STRING | Deep research results + researcher findings |
+| `user:{anonId}:sessions` | ZSET | Session IDs scored by updatedAt |
+
+All keys have a 90-day TTL. Maximum 50 sessions per user.
 
 ---
 
@@ -77,135 +134,65 @@ Full-height layout that manages:
 
 ### Prerequisites
 
-- Node.js 18 or later
-- npm 9 or later
+- Node.js 18+
+- npm 9+
+- An [Upstash Redis](https://console.upstash.com) database (free tier works)
+- The [training-chatbot-backend](https://github.com/House-Majority-Staff-Office-Sponsorship/training-chatbot-backend) running
 
 ### Installation
 
 ```bash
-cd training-chatbot-frontend
 npm install
 ```
 
 ### Environment Variables
 
-Copy the example file and fill in the backend URL:
-
 ```bash
 cp .env.example .env.local
 ```
 
-| Variable | Description | Default |
-|---|---|---|
-| `BACKEND_URL` | Full URL of the `training-chatbot-backend` `/api/research` endpoint (server-side only) | `http://localhost:3001/api/research` |
+| Variable | Description |
+|---|---|
+| `BACKEND_URL` | Base URL of the backend API (server-side only, never exposed to browser) |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token |
 
-### Run the Development Server
+### Run
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-> **Running both repos locally:** The `training-chatbot-backend` is also a Next.js app. Because this frontend already occupies port 3000, start the backend on port 3001:
->
+> If running the backend locally, start it on a different port:
 > ```bash
-> # in the training-chatbot-backend directory
+> # in the backend directory
 > PORT=3001 npm run dev
 > ```
->
-> With the backend running on port 3001, the default `BACKEND_URL` value (`http://localhost:3001/api/research`) in `.env.example` will work without any changes.
+> Then set `BACKEND_URL=http://localhost:3001` in `.env.local`.
 
-### Build for Production
-
-```bash
-npm run build
-npm start
-```
-
-### Lint
+### Build
 
 ```bash
-npm run lint
+npm run build && npm start
 ```
 
 ---
 
-## Backend Integration
+## Backend Proxy
 
-The frontend sends chat messages through a Next.js server-side API route (`/api/research`), which proxies the request to the backend. This keeps the backend URL on the server and never exposes it to the browser.
+All backend requests are proxied through Next.js API routes in `app/api/`. The `lib/proxy.ts` module provides two helpers:
 
-```ts
-// app/api/research/route.ts
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:3001/api/research";
+- `proxyJson(req, path)` — forwards a JSON POST and returns JSON
+- `proxyStream(req, path)` — forwards a POST and pipes the SSE stream back
 
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const backendRes = await fetch(BACKEND_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  // ...
-}
-```
-
-The client calls the Next.js route directly:
-
-```ts
-// lib/chat.ts
-export async function sendMessage(
-  sessionId: string,
-  message: string
-): Promise<Message> {
-  const response = await fetch("/api/research", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ session_id: sessionId, message }),
-  });
-  // ...
-}
-```
-
-### Expected Response Shape
-
-The backend should return a JSON object containing at least one of the following fields:
-
-```json
-{
-  "id": "optional-message-id",
-  "response": "The assistant reply text"
-}
-```
-
-Accepted response fields (in priority order): `response`, `message`, `content`.
-
----
-
-## Data Model
-
-```ts
-// lib/types.ts
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-interface ChatSession {
-  id: string;
-  title: string;
-  lastMessage: string;
-  updatedAt: Date;
-  messages: Message[];
-}
-```
+This keeps the `BACKEND_URL` server-side only and avoids CORS issues in production.
 
 ---
 
 ## Notes
 
-- Mock session data in `lib/chat.ts` pre-populates the sidebar with sample conversations. Replace or remove `MOCK_SESSIONS` when connecting to a real session-management backend.
-- This application is intended for **internal use only** within the House network.
+- This application is intended for **internal use only**.
+- AI responses require verification — a disclaimer is shown below the chat input.
+- Session data is tied to the browser's `anon_id` cookie. Sharing a URL does not expose another user's conversations.
