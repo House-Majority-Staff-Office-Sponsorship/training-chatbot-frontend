@@ -107,7 +107,7 @@ export async function sendMessage(
   return {
     id: data.id ?? crypto.randomUUID(),
     role: "assistant",
-    content: data.response ?? data.message ?? data.content,
+    content: data.answer,
     timestamp: new Date(),
   };
 }
