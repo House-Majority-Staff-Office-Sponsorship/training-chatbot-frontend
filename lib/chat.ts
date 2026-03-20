@@ -52,6 +52,21 @@ export async function fetchQuickSearch(
   return res.json();
 }
 
+export async function fetchEscalationSearch(
+  query: string,
+  context: string,
+  previousAnswer: string,
+  conversationHistory: ConversationMessage[]
+): Promise<{ answer: string; logs: import("./types").LogEntry[] }> {
+  const res = await fetch("/api/search-escalate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, context, previousAnswer, conversationHistory }),
+  });
+  if (!res.ok) throw new Error(`Escalation search failed: ${res.status}`);
+  return res.json();
+}
+
 export async function streamDeepResearch(
   query: string,
   context: string,

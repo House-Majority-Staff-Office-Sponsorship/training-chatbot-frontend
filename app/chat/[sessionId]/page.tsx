@@ -18,6 +18,7 @@ import {
   checkIntent,
   fetchConversational,
   fetchQuickSearch,
+  fetchEscalationSearch,
   streamDeepResearch,
 } from "@/lib/chat";
 import { useSingleSession } from "@/hooks/useSessionPersistence";
@@ -56,6 +57,10 @@ export default function ChatSessionPage() {
   const [pendingConfirmation, setPendingConfirmation] =
     useState<PendingConfirmation | null>(null);
 
+  // Escalation flow: satisfaction check after Flash answer
+  const [satisfaction, setSatisfaction] = useState<"pending" | "satisfied" | "escalated" | null>(null);
+  const [escalationContext, setEscalationContext] = useState<{ query: string; context: string; previousAnswer: string } | null>(null);
+
   // Agent log panel
   const [logPanelOpen, setLogPanelOpen] = useState(false);
 
@@ -91,7 +96,7 @@ export default function ChatSessionPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [session.messages, pendingConfirmation, deepRunning]);
+  }, [session.messages, pendingConfirmation, deepRunning, satisfaction]);
 
   const handleConfirm = useCallback(async () => {
     if (!pendingConfirmation) return;
@@ -212,9 +217,12 @@ export default function ChatSessionPage() {
         appendToHistory("assistant", data.answer);
         if (data.logs) {
           setLogs((prev) => [...prev, ...data.logs]);
-          // persistExtras will be called inside addAssistantMessage already,
-          // but logs were updated after. Do an extra persist.
           setTimeout(() => persistExtras(), 100);
+        }
+        // After a Flash (non-pro) search, show satisfaction check
+        if (!isPro) {
+          setSatisfaction("pending");
+          setEscalationContext({ query, context: enrichedQuery, previousAnswer: data.answer });
         }
       }
     } catch {
@@ -238,6 +246,8 @@ export default function ChatSessionPage() {
     setLoading(true);
     setError(null);
     setInfoMessage(null);
+    setSatisfaction(null);
+    setEscalationContext(null);
 
     try {
       const history = getConversationHistory();
@@ -289,6 +299,33 @@ export default function ChatSessionPage() {
       setLoading(false);
     }
   }
+
+  const handleEscalate = useCallback(async () => {
+    if (!escalationContext) return;
+    setSatisfaction("escalated");
+    setLoading(true);
+    setError(null);
+    try {
+      const history = getConversationHistory();
+      const data = await fetchEscalationSearch(
+        escalationContext.query,
+        escalationContext.context,
+        escalationContext.previousAnswer,
+        history
+      );
+      addAssistantMessage(data.answer);
+      appendToHistory("assistant", data.answer);
+      if (data.logs) {
+        setLogs((prev) => [...prev, ...data.logs]);
+        setTimeout(() => persistExtras(), 100);
+      }
+    } catch {
+      setError("Deeper search failed. Please try again.");
+    } finally {
+      setLoading(false);
+      setEscalationContext(null);
+    }
+  }, [escalationContext, getConversationHistory, addAssistantMessage, appendToHistory, setLogs, persistExtras]);
 
   function handleCancelConfirmation() {
     setPendingConfirmation(null);
@@ -365,8 +402,36 @@ export default function ChatSessionPage() {
               />
             )}
 
+            {/* Satisfaction check after Flash answer */}
+            {satisfaction === "pending" && !loading && (
+              <div className="text-sm bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
+                <p className="text-emerald-800 mb-3">Does this answer your question?</p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setSatisfaction("satisfied"); setEscalationContext(null); }}
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                  >
+                    Yes
+                  </button>
+                  <button
+                    onClick={handleEscalate}
+                    className="px-4 py-1.5 text-sm font-medium text-white bg-cyan-600 rounded-md hover:bg-cyan-700 transition-colors"
+                  >
+                    No, search deeper
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Escalation in progress */}
+            {satisfaction === "escalated" && loading && (
+              <div className="text-sm text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-lg px-4 py-3">
+                Searching deeper with Pro model...
+              </div>
+            )}
+
             {/* Loading indicator with timer */}
-            {loading && !deepRunning && <ThinkingIndicator />}
+            {loading && !deepRunning && satisfaction !== "escalated" && <ThinkingIndicator />}
 
             {/* Error */}
             {error && (
