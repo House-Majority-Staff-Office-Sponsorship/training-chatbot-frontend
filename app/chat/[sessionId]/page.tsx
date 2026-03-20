@@ -402,22 +402,23 @@ export default function ChatSessionPage() {
               />
             )}
 
-            {/* Satisfaction check after Flash answer */}
+            {/* Satisfaction check — compact, tucked under the AI response */}
             {satisfaction === "pending" && !loading && (
-              <div className="text-sm bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">
-                <p className="text-emerald-800 mb-3">Does this answer your question?</p>
-                <div className="flex gap-2">
+              <div className="flex gap-3">
+                <div className="w-8 flex-shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <span>Did this help?</span>
                   <button
                     onClick={() => { setSatisfaction("satisfied"); setEscalationContext(null); }}
-                    className="px-4 py-1.5 text-sm font-medium text-white bg-emerald-600 rounded-md hover:bg-emerald-700 transition-colors"
+                    className="px-2.5 py-1 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
                   >
                     Yes
                   </button>
                   <button
                     onClick={handleEscalate}
-                    className="px-4 py-1.5 text-sm font-medium text-white bg-cyan-600 rounded-md hover:bg-cyan-700 transition-colors"
+                    className="px-2.5 py-1 rounded-full border border-cyan-200 text-cyan-700 hover:bg-cyan-50 transition-colors"
                   >
-                    No, search deeper
+                    Search deeper
                   </button>
                 </div>
               </div>
@@ -425,8 +426,9 @@ export default function ChatSessionPage() {
 
             {/* Escalation in progress */}
             {satisfaction === "escalated" && loading && (
-              <div className="text-sm text-cyan-700 bg-cyan-50 border border-cyan-200 rounded-lg px-4 py-3">
-                Searching deeper with Pro model...
+              <div className="flex gap-3">
+                <div className="w-8 flex-shrink-0" />
+                <span className="text-xs text-cyan-600">Searching deeper with Pro model...</span>
               </div>
             )}
 
