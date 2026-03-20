@@ -28,12 +28,22 @@ export default function Home() {
             House Training Assistant
           </span>
         </div>
-        <Link
-          href="/chat"
-          className="inline-flex items-center justify-center px-7 py-3 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-medium rounded-md transition-colors shadow-sm"
-        >
-          Open Chat
-        </Link>
+        <div className="flex items-center gap-3">
+          <a
+            href="https://hmso-training.ics.hawaii.edu/backend"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center px-5 py-3 border border-zinc-600 text-zinc-300 hover:text-white hover:border-zinc-400 text-sm font-medium rounded-md transition-colors"
+          >
+            See API Documentation
+          </a>
+          <Link
+            href="/chat"
+            className="inline-flex items-center justify-center px-7 py-3 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-medium rounded-md transition-colors shadow-sm"
+          >
+            Open Chat
+          </Link>
+        </div>
       </nav>
 
       {/* Hero */}
