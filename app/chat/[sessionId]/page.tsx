@@ -88,11 +88,7 @@ export default function ChatSessionPage() {
   }, [sessionLoaded, researchers.length, deepRunning]);
 
   // Auto-open log panel if we loaded persisted logs
-  useEffect(() => {
-    if (sessionLoaded && logs.length > 0) {
-      setLogPanelOpen(true);
-    }
-  }, [sessionLoaded, logs.length]);
+  // Agent log panel stays closed unless the user opens it manually
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -278,15 +274,80 @@ export default function ChatSessionPage() {
           return;
         }
 
-        case "confirm":
-          setPendingConfirmation({
-            sessionId,
-            query: content,
-            enrichedQuery: intent.enrichedQuery ?? content,
-            message: intent.message,
-          });
+        case "confirm": {
+          const enrichedQuery = intent.enrichedQuery ?? content;
+          if (searchMode === "deep") {
+            setDeepRunning(true);
+            setDeepResult({});
+            setResearchers([]);
+            const controller = new AbortController();
+            abortRef.current = controller;
+            const history = getConversationHistory();
+            const res = await streamDeepResearch(content, enrichedQuery, history, controller.signal);
+            const reader = res.body!.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
+            let eventType = "";
+            function processLine(line: string) {
+              if (line.startsWith("event: ")) {
+                eventType = line.slice(7).trim();
+              } else if (line.startsWith("data: ")) {
+                try {
+                  const payload = JSON.parse(line.slice(6));
+                  switch (eventType) {
+                    case "log": setLogs((prev) => [...prev, payload]); break;
+                    case "step":
+                      setDeepResult((prev) => ({ ...prev, [payload.field]: payload.value }));
+                      if (payload.field === "answer") {
+                        addAssistantMessage(payload.value);
+                        appendToHistory("user", content);
+                        appendToHistory("assistant", payload.value);
+                      }
+                      break;
+                    case "researchers_init":
+                      setResearchers(payload.labels.map((label: string) => ({ label, findings: "", done: false })));
+                      break;
+                    case "researcher_done":
+                      setResearchers((prev) => prev.map((r, i) => i === payload.index ? { ...r, findings: payload.value, done: true } : r));
+                      break;
+                    case "error": setError(payload.error || "Deep research failed"); break;
+                  }
+                } catch { /* skip */ }
+                eventType = "";
+              }
+            }
+            while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true });
+              const lines = buffer.split("\n");
+              buffer = lines.pop() ?? "";
+              for (const l of lines) processLine(l);
+            }
+            if (buffer.trim()) processLine(buffer);
+            setDeepRunning(false);
+            setResearchPanelOpen(true);
+            abortRef.current = null;
+            setTimeout(() => persistExtras(), 300);
+          } else {
+            const isPro = searchMode === "quick-pro";
+            const history = getConversationHistory();
+            const data = await fetchQuickSearch(content, enrichedQuery, isPro, history);
+            addAssistantMessage(data.answer);
+            appendToHistory("user", content);
+            appendToHistory("assistant", data.answer);
+            if (data.logs) {
+              setLogs((prev) => [...prev, ...data.logs]);
+              setTimeout(() => persistExtras(), 100);
+            }
+            if (!isPro) {
+              setSatisfaction("pending");
+              setEscalationContext({ query: content, context: enrichedQuery, previousAnswer: data.answer });
+            }
+          }
           setLoading(false);
           return;
+        }
 
         default:
           setLoading(false);
@@ -392,15 +453,6 @@ export default function ChatSessionPage() {
               </div>
             )}
 
-            {/* Intent confirmation */}
-            {pendingConfirmation && (
-              <IntentConfirmation
-                confirmation={pendingConfirmation}
-                mode={searchMode}
-                onConfirm={handleConfirm}
-                onCancel={handleCancelConfirmation}
-              />
-            )}
 
             {/* Satisfaction check — compact, tucked under the AI response */}
             {satisfaction === "pending" && !loading && (
@@ -452,7 +504,7 @@ export default function ChatSessionPage() {
             <div className="max-w-3xl mx-auto px-4">
               <ChatInput
                 onSend={handleSend}
-                disabled={loading || !!pendingConfirmation}
+                disabled={loading}
                 searchMode={searchMode}
                 onSearchModeChange={setSearchMode}
               />
