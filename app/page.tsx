@@ -56,7 +56,7 @@ export default function Home() {
       <section className="flex-1 flex items-center px-6 pt-20 pb-5">
         <div className="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center gap-12">
           {/* Left Column */}
-          <div className="flex-1">
+          <div className="flex-[3] min-w-0">
             <p className="text-med font-semibold uppercase tracking-widest text-blue-800 mb-5">
               House Majority Staff Office
             </p>
@@ -64,9 +64,9 @@ export default function Home() {
               className="text-5xl font-bold text-slate-900 leading-tight mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              AI chats and quizzes for
+              AI chats and quizzes
               <br />
-              onboarding policies and procedures.
+              for onboarding policies and procedures.
             </h1>
             <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-xl">
               Search House training documents, get grounded answers, and quiz yourself on what matters — all from one place.
@@ -88,7 +88,7 @@ export default function Home() {
           </div>
 
           {/* Right Column — Stacked display */}
-          <div className="relative flex-1 hidden md:block ml-12 overflow-visible" style={{ minHeight: 420 }}>
+          <div className="relative flex-[2] hidden md:block ml-12 overflow-visible" style={{ minHeight: 420 }}>
             {/* Capitol image — centered background */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 380, maxWidth: "none" }}>
               <Image
