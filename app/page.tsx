@@ -64,9 +64,9 @@ export default function Home() {
               className="text-5xl font-bold text-slate-900 leading-tight mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              AI chats and quizzes for
+              AI chats and quizzes
               <br />
-              onboarding policies
+              for onboarding policies
               <br />
               and procedures.
             </h1>
@@ -90,7 +90,7 @@ export default function Home() {
           </div>
 
           {/* Right Column — Stacked display */}
-          <div className="relative flex-[2] hidden md:block ml-12 overflow-visible" style={{ minHeight: 420 }}>
+          <div className="relative flex-1 hidden md:block ml-6 overflow-visible" style={{ minHeight: 420 }}>
             {/* Capitol image — centered background */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 380, maxWidth: "none" }}>
               <Image
