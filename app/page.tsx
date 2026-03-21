@@ -88,21 +88,21 @@ export default function Home() {
           </div>
 
           {/* Right Column — Stacked display */}
-          <div className="relative flex-1 hidden md:block" style={{ minHeight: 420 }}>
+          <div className="relative flex-1 hidden md:block ml-12" style={{ minHeight: 420 }}>
             {/* Capitol image — centered background */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <Image
                 src="/capitol.png"
                 alt="U.S. Capitol"
-                width={400}
-                height={240}
+                width={480}
+                height={288}
                 className="rounded-xl object-cover opacity-90"
                 priority
               />
             </div>
 
             {/* Mini chat preview — floating top-left */}
-            <div className="absolute -top-2 -left-4 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden transform -rotate-2 z-10">
+            <div className="absolute -top-2 left-4 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden transform -rotate-2 z-10">
               <div className="bg-[#1a2332] px-3 py-1.5 flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
                 <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
