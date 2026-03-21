@@ -64,7 +64,7 @@ export default function Home() {
               className="text-5xl font-bold text-slate-900 leading-tight mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              AI that accurately chats and quizzes for
+              AI chats and quizzes for
               <br />
               onboarding policies and procedures.
             </h1>
@@ -88,15 +88,15 @@ export default function Home() {
           </div>
 
           {/* Right Column — Stacked display */}
-          <div className="relative flex-1 hidden md:block ml-12" style={{ minHeight: 420 }}>
+          <div className="relative flex-1 hidden md:block ml-12 overflow-visible" style={{ minHeight: 420 }}>
             {/* Capitol image — centered background */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 640, maxWidth: "none" }}>
               <Image
                 src="/capitol.png"
                 alt="U.S. Capitol"
-                width={480}
-                height={288}
-                className="rounded-xl object-cover opacity-90"
+                width={640}
+                height={384}
+                className="rounded-xl object-cover opacity-90 w-full h-auto"
                 priority
               />
             </div>
@@ -428,12 +428,12 @@ export default function Home() {
               >
                 Start a conversation
               </Link>
-              <a
+              <Link
                 href="/quiz"
                 className="inline-flex items-center justify-center px-15 py-3 border border-slate-200 text-slate-700 text-sm font-medium rounded-md bg-white hover:bg-blue-500 hover:text-white transition-colors"
               >
                 Take a quiz
-              </a>
+              </Link>
             </div>
           </div>
         </div>
