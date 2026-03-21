@@ -12,7 +12,7 @@ interface ChatInputProps {
 
 function getModeLabel(mode: SearchMode, extended: boolean): string {
   if (mode === "deep") return "Gemini 2.5 Pro";
-  return extended ? "Gemini 2.5 Pro" : "Gemini 2.0 Flash";
+  return extended ? "Gemini 2.5 Pro" : "Gemini 2.5 Flash";
 }
 
 export default function ChatInput({
@@ -94,7 +94,7 @@ export default function ChatInput({
   }
 
   return (
-    <div className="bg-white border border-slate-200 rounded-xl shadow-sm">
+    <div className="bg-white border border-slate-200 rounded-xl shadow-sm" data-tutorial="chat-input">
       <form onSubmit={handleSubmit} className="flex items-end gap-3 px-4 py-3">
         <textarea
           ref={textareaRef}
@@ -139,7 +139,7 @@ export default function ChatInput({
         />
 
         {/* Model selector dropdown */}
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative" ref={dropdownRef} data-tutorial="model-selector">
           <button
             type="button"
             onClick={() => setDropdownOpen((v) => !v)}
@@ -178,15 +178,16 @@ export default function ChatInput({
           {/* Dropdown menu */}
           {dropdownOpen && (
             <div className="absolute bottom-full right-0 mb-2 w-72 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
-              {/* Gemini 2.0 Flash option */}
+              {/* Gemini 2.5 Flash option */}
               <button
                 type="button"
                 onClick={selectQuickSearch}
+                data-tutorial="model-flash"
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors text-left"
               >
                 <div>
                   <p className="text-sm font-medium text-slate-900">
-                    Gemini 2.0 Flash
+                    Gemini 2.5 Flash
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Fast answers for everyday questions
@@ -210,7 +211,7 @@ export default function ChatInput({
               </button>
 
               {/* Extended thinking toggle */}
-              <div className="border-t border-slate-100 px-4 py-3 flex items-center justify-between">
+              <div className="border-t border-slate-100 px-4 py-3 flex items-center justify-between" data-tutorial="model-extended">
                 <div>
                   <p className="text-sm font-medium text-slate-900">
                     Extended thinking
@@ -242,6 +243,7 @@ export default function ChatInput({
               <button
                 type="button"
                 onClick={selectDeepResearch}
+                data-tutorial="model-deep"
                 className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors text-left"
               >
                 <div>

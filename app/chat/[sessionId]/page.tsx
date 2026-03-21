@@ -9,6 +9,7 @@ import IntentConfirmation from "@/components/IntentConfirmation";
 import AgentLogPanel from "@/components/AgentLogPanel";
 import DeepResearchProgress from "@/components/DeepResearchProgress";
 import DeepResearchPanel from "@/components/DeepResearchPanel";
+import ChatTutorial from "@/components/ChatTutorial";
 import {
   Message,
   SearchMode,
@@ -531,6 +532,9 @@ export default function ChatSessionPage() {
         isOpen={logPanelOpen}
         onToggle={() => setLogPanelOpen((v) => !v)}
       />
+
+      {/* First-time tutorial */}
+      <ChatTutorial />
     </>
   );
 }
@@ -577,7 +581,7 @@ function EmptyState({
   onSuggestionClick: (text: string) => void;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="flex flex-col items-center justify-center py-16 text-center" data-tutorial="empty-state">
       <Image
         src="/logo.png"
         alt="House Training Assistant"
@@ -592,7 +596,7 @@ function EmptyState({
         Ask me anything about House procedures, ethics rules, staff policies, or
         training materials.
       </p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-lg" data-tutorial="suggestion-cards">
         {SUGGESTIONS.map((s) => (
           <button
             key={s}
