@@ -64,9 +64,11 @@ export default function Home() {
               className="text-5xl font-bold text-slate-900 leading-tight mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              AI chats and quizzes
+              AI chats and quizzes for
               <br />
-              for onboarding policies and procedures.
+              onboarding policies
+              <br />
+              and procedures.
             </h1>
             <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-xl">
               Search House training documents, get grounded answers, and quiz yourself on what matters — all from one place.
