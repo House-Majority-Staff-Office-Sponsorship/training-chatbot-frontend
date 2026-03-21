@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Sparkles, Loader2 } from "lucide-react";
 import { StoredQuiz } from "@/lib/quiz-store";
 import { useQuizListContext } from "../layout";
+import QuizTutorial from "@/components/QuizTutorial";
 
 const QUIZ_SUGGESTIONS = [
   { label: "Legislative Process", topic: "the legislative process and how a bill becomes law" },
@@ -93,7 +94,7 @@ export default function NewQuizPage() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 overflow-y-auto py-10">
       {/* Generate card */}
-      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-sm p-8">
+      <div className="w-full max-w-lg bg-white border border-slate-200 rounded-2xl shadow-sm p-8" data-tutorial="quiz-card">
         <div className="flex flex-col items-center text-center mb-6">
           <Image
             src="/logo.png"
@@ -116,6 +117,7 @@ export default function NewQuizPage() {
               Topic
             </label>
             <textarea
+              data-tutorial="quiz-topic"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               onKeyDown={(e) => {
@@ -130,7 +132,7 @@ export default function NewQuizPage() {
             />
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4" data-tutorial="quiz-options">
             <div className="flex-1">
               <label className="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
                 Number of questions
@@ -165,7 +167,8 @@ export default function NewQuizPage() {
         </div>
 
         {/* Suggestions */}
-        <div className="mt-6 pt-6 border-t border-slate-100">
+        {/* data-tutorial on the suggestions grid is inside the card */}
+        <div className="mt-6 pt-6 border-t border-slate-100" data-tutorial="quiz-suggestions">
           <p className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">
             Popular topics
           </p>
@@ -186,6 +189,8 @@ export default function NewQuizPage() {
       <p className="text-center text-xs text-slate-400 mt-4">
         Sponsored by the House of Majority Staff Office (HMSO)
       </p>
+
+      <QuizTutorial />
     </div>
   );
 }

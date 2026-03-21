@@ -79,6 +79,7 @@ export default function QuizSidebar({
             <div className="px-3 py-3 shrink-0">
               <button
                 onClick={onNewQuiz}
+                data-tutorial="quiz-new-btn"
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -88,7 +89,7 @@ export default function QuizSidebar({
               </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto px-2 pb-4">
+            <nav className="flex-1 overflow-y-auto px-2 pb-4" data-tutorial="quiz-sidebar-list">
               <p className="px-2 pt-2 pb-1 text-xs font-medium uppercase tracking-wider text-slate-500">
                 Recent
               </p>
