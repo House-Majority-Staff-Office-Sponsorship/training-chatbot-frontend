@@ -64,7 +64,7 @@ export default function Home() {
               className="text-5xl font-bold text-slate-900 leading-tight mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              AI chat and quizzes for
+              AI that accurately chats and quizzes for
               <br />
               onboarding policies and procedures.
             </h1>
@@ -87,16 +87,72 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Column — Capitol Image */}
-          <div className="flex items-center justify-center">
-            <Image
-              src="/capitol.png"
-              alt="U.S. Capitol"
-              width={500}
-              height={300}
-              className="rounded-xl object-cover"
-              priority
-            />
+          {/* Right Column — Stacked display */}
+          <div className="relative flex-1 hidden md:block" style={{ minHeight: 420 }}>
+            {/* Capitol image — centered background */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+              <Image
+                src="/capitol.png"
+                alt="U.S. Capitol"
+                width={400}
+                height={240}
+                className="rounded-xl object-cover opacity-90"
+                priority
+              />
+            </div>
+
+            {/* Mini chat preview — floating top-left */}
+            <div className="absolute -top-2 -left-4 w-64 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden transform -rotate-2 z-10">
+              <div className="bg-[#1a2332] px-3 py-1.5 flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                <span className="ml-2 text-[9px] text-slate-400">Chat</span>
+              </div>
+              <div className="p-3 space-y-2">
+                <div className="flex gap-2">
+                  <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center text-[7px] font-bold text-white shrink-0">You</div>
+                  <div className="bg-blue-600 text-white text-[9px] rounded-lg rounded-tr-sm px-2.5 py-1.5 max-w-[170px]">What are the ethics rules?</div>
+                </div>
+                <div className="flex gap-2">
+                  <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[7px] font-bold text-slate-600 shrink-0">AI</div>
+                  <div className="bg-slate-50 border border-slate-200 text-slate-600 text-[9px] rounded-lg rounded-tl-sm px-2.5 py-1.5 max-w-[170px]">
+                    Staff must maintain decorum, wear IDs at all times...
+                    <span className="block text-blue-500 text-[8px] mt-1">Source: House Ethics Manual</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Mini quiz preview — floating bottom-right */}
+            <div className="absolute -bottom-2 -right-4 w-60 bg-white border border-slate-200 rounded-xl shadow-xl overflow-hidden transform rotate-2 z-10">
+              <div className="bg-[#1a2332] px-3 py-1.5 flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                <span className="ml-2 text-[9px] text-slate-400">Quiz</span>
+              </div>
+              <div className="p-3">
+                <div className="h-0.5 bg-slate-100 rounded-full mb-2">
+                  <div className="h-0.5 bg-blue-500 rounded-full" style={{ width: "60%" }} />
+                </div>
+                <p className="text-[9px] font-semibold text-slate-800 mb-2 leading-snug">What should staff do if unsure about a gift?</p>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-slate-200 text-[8px] text-slate-500">
+                    <span className="w-3 h-3 rounded-full border border-slate-300 flex items-center justify-center text-[6px] font-bold">A</span>
+                    Accept it
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-green-400 bg-green-50 text-[8px] text-green-700 font-medium">
+                    <span className="w-3 h-3 rounded-full border border-green-500 flex items-center justify-center text-[6px] font-bold">B</span>
+                    Consult Ethics Committee
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-md border border-red-400 bg-red-50 text-[8px] text-red-600">
+                    <span className="w-3 h-3 rounded-full border border-red-400 flex items-center justify-center text-[6px] font-bold">C</span>
+                    Ask your supervisor
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
