@@ -15,23 +15,23 @@ export default function Home() {
       style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
     >
       {/* Navigation */}
-      <nav className="sticky top-0 z-10 flex items-center justify-between px-8 py-5 border-b border-slate-200 bg-zinc-950/80">
+      <nav className="sticky top-0 z-10 flex items-center justify-between px-8 py-2.5 border-b border-slate-200 bg-zinc-950/80 backdrop-blur-sm">
         <div className="flex items-center gap-2.5">
           <img
             src="https://portal.ehawaii.gov/assets/webp/elements/sliver/seal.webp"
             alt="Hawaii State Seal"
-            width={60}
-            height={60}
+            width={36}
+            height={36}
             className="rounded"
           />
-          <span className="text-lg font-semibold text-white tracking-tight">
+          <span className="text-sm font-semibold text-white tracking-tight">
             House Training Assistant
           </span>
         </div>
         <div className="flex items-center gap-3">
           <Link
             href="/quiz"
-            className="inline-flex items-center justify-center px-5 py-3 text-zinc-300 hover:text-white text-sm font-medium transition-colors"
+            className="inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
           >
             Quiz
           </Link>
@@ -39,13 +39,13 @@ export default function Home() {
             href="https://hmso-training.ics.hawaii.edu/backend"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-5 py-3 border border-zinc-600 text-zinc-300 hover:text-white hover:border-zinc-400 text-sm font-medium rounded-md transition-colors"
+            className="inline-flex items-center justify-center px-4 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-xs font-medium rounded-md transition-colors"
           >
             API Docs
           </a>
           <Link
             href="/chat"
-            className="inline-flex items-center justify-center px-7 py-3 bg-zinc-600 hover:bg-zinc-500 text-white text-sm font-medium rounded-md transition-colors shadow-sm"
+            className="inline-flex items-center justify-center px-5 py-1.5 bg-zinc-600 hover:bg-zinc-500 text-white text-xs font-medium rounded-md transition-colors"
           >
             Open Chat
           </Link>
@@ -64,14 +64,12 @@ export default function Home() {
               className="text-5xl font-bold text-slate-900 leading-tight mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
-              Your AI-powered
+              AI chat and quizzes for
               <br />
-              training companion
+              onboarding policies and procedures.
             </h1>
             <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-xl">
-              Get instant answers to policy questions, navigate procedures, and
-              test your knowledge with AI-generated quizzes — all grounded in
-              official training materials.
+              Search House training documents, get grounded answers, and quiz yourself on what matters — all from one place.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
@@ -86,12 +84,6 @@ export default function Home() {
               >
                 Take a quiz
               </Link>
-              <a
-                href="#features"
-                className="inline-flex items-center justify-center px-7 py-3 border border-slate-200 text-slate-700 text-sm font-medium rounded-md hover:bg-slate-50 transition-colors"
-              >
-                Learn more
-              </a>
             </div>
           </div>
 
