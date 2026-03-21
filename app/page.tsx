@@ -90,12 +90,12 @@ export default function Home() {
           {/* Right Column — Stacked display */}
           <div className="relative flex-1 hidden md:block ml-12 overflow-visible" style={{ minHeight: 420 }}>
             {/* Capitol image — centered background */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 640, maxWidth: "none" }}>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 380, maxWidth: "none" }}>
               <Image
                 src="/capitol.png"
                 alt="U.S. Capitol"
-                width={640}
-                height={384}
+                width={380}
+                height={228}
                 className="rounded-xl object-cover opacity-90 w-full h-auto"
                 priority
               />
