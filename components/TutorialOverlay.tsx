@@ -157,42 +157,39 @@ export default function TutorialOverlay({
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const TOOLTIP_W = Math.min(320, vw - 32);
-    const TOOLTIP_H = tooltipH;
+    const TOOLTIP_H = Math.min(tooltipH, vh - 32);
 
-    let top: number | undefined;
-    let bottom: number | undefined;
+    let top: number;
     let left: number;
 
     const centreX = rect.left + rect.width / 2;
     left = Math.max(16, Math.min(centreX - TOOLTIP_W / 2, vw - TOOLTIP_W - 16));
 
     if (placement === "bottom") {
-      top = rect.bottom + PAD;
-      if (top + TOOLTIP_H > vh) {
-        bottom = vh - rect.top + PAD;
-        top = undefined;
-      }
+      const below = rect.bottom + PAD;
+      const above = rect.top - TOOLTIP_H - PAD;
+      if (below + TOOLTIP_H <= vh - 16) top = below;
+      else if (above >= 16) top = above;
+      else top = (vh - TOOLTIP_H) / 2;
     } else if (placement === "top") {
-      bottom = vh - rect.top + PAD;
-      bottom = Math.min(bottom, vh - TOOLTIP_H - 16);
-      if (bottom < 16) {
-        bottom = undefined;
-        top = rect.bottom + PAD;
-      }
+      const above = rect.top - TOOLTIP_H - PAD;
+      const below = rect.bottom + PAD;
+      if (above >= 16) top = above;
+      else if (below + TOOLTIP_H <= vh - 16) top = below;
+      else top = (vh - TOOLTIP_H) / 2;
     } else if (placement === "right") {
       top = rect.top + rect.height / 2 - TOOLTIP_H / 2;
-      top = Math.max(16, Math.min(top, vh - TOOLTIP_H - 16));
       left = Math.min(rect.right + PAD, vw - TOOLTIP_W - 16);
     } else {
       top = rect.top + rect.height / 2 - TOOLTIP_H / 2;
-      top = Math.max(16, Math.min(top, vh - TOOLTIP_H - 16));
       left = Math.max(16, rect.left - TOOLTIP_W - PAD);
     }
 
+    top = Math.max(16, Math.min(top, vh - TOOLTIP_H - 16));
+
     return {
       position: "fixed",
-      top: top !== undefined ? top : undefined,
-      bottom: bottom !== undefined ? bottom : undefined,
+      top,
       left,
       width: TOOLTIP_W,
       maxHeight: vh - 32,

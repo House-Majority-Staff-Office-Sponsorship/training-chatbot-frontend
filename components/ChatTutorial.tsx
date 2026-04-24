@@ -25,7 +25,7 @@ const STEPS: TutorialStep[] = [
     selector: "[data-tutorial='empty-state']",
     title: "Welcome!",
     description:
-      "This is the HMSO Training Assistant. You can ask questions about House Majority training documents, policies, and procedures. Try clicking a suggestion or type your own question.",
+      "Ask questions about House Majority training docs, policies, and procedures.",
     placement: "bottom",
   },
   {

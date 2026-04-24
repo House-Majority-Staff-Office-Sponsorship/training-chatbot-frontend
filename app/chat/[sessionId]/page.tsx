@@ -70,6 +70,12 @@ export default function ChatSessionPage() {
   const [researchPanelOpen, setResearchPanelOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Wake the backend while the user reads / types so the first chat
+  // request doesn't pay a cold-start penalty.
+  useEffect(() => {
+    fetch("/api/warmup", { cache: "no-store" }).catch(() => {});
+  }, []);
+
   // Sync session title/lastMessage changes to the sidebar
   useEffect(() => {
     if (sessionLoaded) {

@@ -66,9 +66,9 @@ export default function Home() {
             >
               AI chats and quizzes
               <br />
-              for onboarding policies
+              for onboarding policy
               <br />
-              and procedures.
+              and procedure.
             </h1>
             <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-xl">
               Search House training documents, get grounded answers, and quiz yourself on what matters — all from one place.
