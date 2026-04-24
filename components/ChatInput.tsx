@@ -11,8 +11,8 @@ interface ChatInputProps {
 }
 
 function getModeLabel(mode: SearchMode, extended: boolean): string {
-  if (mode === "deep") return "Gemini 2.5 Pro";
-  return extended ? "Gemini 2.5 Pro" : "Gemini 2.5 Flash";
+  if (mode === "deep") return "Gemini 3.1 Pro";
+  return extended ? "Gemini 3.1 Pro" : "Gemini 3.1 Flash-Lite";
 }
 
 export default function ChatInput({
@@ -178,7 +178,7 @@ export default function ChatInput({
           {/* Dropdown menu */}
           {dropdownOpen && (
             <div className="absolute bottom-full right-0 mb-2 w-72 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden z-50">
-              {/* Gemini 2.5 Flash option */}
+              {/* Gemini 3.1 Flash-Lite option */}
               <button
                 type="button"
                 onClick={selectQuickSearch}
@@ -187,7 +187,7 @@ export default function ChatInput({
               >
                 <div>
                   <p className="text-sm font-medium text-slate-900">
-                    Gemini 2.5 Flash
+                    Gemini 3.1 Flash-Lite
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">
                     Fast answers for everyday questions
@@ -251,7 +251,7 @@ export default function ChatInput({
                     Deep Research
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Multi-agent pipeline with Gemini 2.5 Pro
+                    Multi-agent pipeline with Gemini 3.1 Pro
                   </p>
                 </div>
                 {searchMode === "deep" && (

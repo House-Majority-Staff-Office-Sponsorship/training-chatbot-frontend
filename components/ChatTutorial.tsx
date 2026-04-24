@@ -45,7 +45,7 @@ const STEPS: TutorialStep[] = [
   },
   {
     selector: "[data-tutorial='model-flash']",
-    title: "Gemini 2.5 Flash",
+    title: "Gemini 3.1 Flash-Lite",
     description:
       "The default model. Fast answers for everyday questions — great for quick lookups on policies, procedures, and rules.",
     placement: "left",

@@ -48,7 +48,6 @@ export default function ChatSessionPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [infoMessage, setInfoMessage] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Search mode
@@ -248,7 +247,6 @@ export default function ChatSessionPage() {
     addUserMessage(userMessage);
     setLoading(true);
     setError(null);
-    setInfoMessage(null);
     setSatisfaction(null);
     setEscalationContext(null);
 
@@ -263,7 +261,9 @@ export default function ChatSessionPage() {
       switch (intent.action) {
         case "reject":
         case "clarify":
-          setInfoMessage(intent.message);
+          addAssistantMessage(intent.message);
+          appendToHistory("user", content);
+          appendToHistory("assistant", intent.message);
           setLoading(false);
           return;
 
@@ -452,14 +452,6 @@ export default function ChatSessionPage() {
                 )}
               </>
             )}
-
-            {/* Info message (clarify/reject) */}
-            {infoMessage && (
-              <div className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
-                {infoMessage}
-              </div>
-            )}
-
 
             {/* Satisfaction check — compact, tucked under the AI response */}
             {satisfaction === "pending" && !loading && (

@@ -233,7 +233,7 @@ export default function Home() {
                 <div className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 flex items-center gap-2">
                   <span className="text-xs text-slate-400 flex-1">Type a message...</span>
                   <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                    <span>Gemini 2.5 Flash</span>
+                    <span>Gemini 3.1 Flash-Lite</span>
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-2.5 w-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                   </div>
                 </div>
@@ -255,11 +255,11 @@ export default function Home() {
             <ul className="space-y-3 text-sm text-slate-600">
               <li className="flex items-start gap-3">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                <span><strong className="text-slate-900">Quick Search</strong> — Fast answers using Gemini 2.5 Flash for everyday questions</span>
+                <span><strong className="text-slate-900">Quick Search</strong> — Fast answers using Gemini 3.1 Flash-Lite for everyday questions</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
-                <span><strong className="text-slate-900">Extended Thinking</strong> — Deeper analysis with Gemini 2.5 Pro for complex topics</span>
+                <span><strong className="text-slate-900">Extended Thinking</strong> — Deeper analysis with Gemini 3.1 Pro for complex topics</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
