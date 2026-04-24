@@ -37,6 +37,7 @@ export default function ChatSessionPage() {
     sessionLoaded,
     addUserMessage,
     addAssistantMessage,
+    toggleFlag,
     getConversationHistory,
     appendToHistory,
     logs,
@@ -66,8 +67,13 @@ export default function ChatSessionPage() {
   const [satisfaction, setSatisfaction] = useState<"pending" | "satisfied" | "escalated" | null>(null);
   const [escalationContext, setEscalationContext] = useState<{ query: string; context: string; previousAnswer: string } | null>(null);
 
-  // Agent log panel
+  // Agent log panel — toggled from the sidebar via a window event
   const [logPanelOpen, setLogPanelOpen] = useState(false);
+  useEffect(() => {
+    const handler = () => setLogPanelOpen((v) => !v);
+    window.addEventListener("chat:toggle-logs", handler);
+    return () => window.removeEventListener("chat:toggle-logs", handler);
+  }, []);
 
   // Deep research UI state
   const [deepRunning, setDeepRunning] = useState(false);
@@ -456,7 +462,11 @@ export default function ChatSessionPage() {
             ) : (
               <>
                 {session.messages.map((msg) => (
-                  <ChatMessage key={msg.id} message={msg} />
+                  <ChatMessage
+                    key={msg.id}
+                    message={msg}
+                    onToggleFlag={toggleFlag}
+                  />
                 ))}
                 {deepRunning && (
                   <DeepResearchProgress

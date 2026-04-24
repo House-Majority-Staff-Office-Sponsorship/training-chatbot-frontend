@@ -245,6 +245,30 @@ export function useSingleSession(sessionId: string) {
     [sessionId]
   );
 
+  /** Toggle the flagged state on a single assistant message and persist. */
+  const toggleFlag = useCallback(
+    (messageId: string) => {
+      setSession((prev) => {
+        const updated = {
+          ...prev,
+          messages: prev.messages.map((m) =>
+            m.id === messageId ? { ...m, flagged: !m.flagged } : m
+          ),
+          updatedAt: new Date(),
+        };
+        persistUpdate(sessionId, updated, {
+          conversationHistory: historyCache.current,
+          logs: logsRef.current,
+          deepResearch: researchersRef.current.length > 0
+            ? { result: deepResultRef.current, researchers: researchersRef.current }
+            : undefined,
+        });
+        return updated;
+      });
+    },
+    [sessionId]
+  );
+
   /** Persist logs + research after deep research or quick search completes. */
   const persistExtras = useCallback(() => {
     setSession((prev) => {
@@ -277,6 +301,7 @@ export function useSingleSession(sessionId: string) {
     sessionLoaded,
     addUserMessage,
     addAssistantMessage,
+    toggleFlag,
     getConversationHistory,
     appendToHistory,
     // Logs

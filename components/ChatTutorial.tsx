@@ -39,9 +39,8 @@ const STEPS: TutorialStep[] = [
     selector: "[data-tutorial='model-selector']",
     title: "Switch models",
     description:
-      "Click here to choose between different AI models. Each model offers a different balance of speed and depth for your search.",
+      "Open this dropdown anytime to choose between different AI models. Each model offers a different balance of speed and depth for your search.",
     placement: "top",
-    clickToContinue: true,
   },
   {
     selector: "[data-tutorial='model-flash']",
@@ -73,12 +72,27 @@ const STEPS: TutorialStep[] = [
   },
 ];
 
+// Steps 2..5 highlight elements that only exist when the model dropdown is
+// open. We "lock" the dropdown open while the tutorial is on those steps.
+const FIRST_DROPDOWN_STEP = 2;
+const LAST_DROPDOWN_STEP = 5;
+
+function syncDropdown(stepIndex: number) {
+  if (typeof window === "undefined") return;
+  const inDropdownRange =
+    stepIndex >= FIRST_DROPDOWN_STEP && stepIndex <= LAST_DROPDOWN_STEP;
+  window.dispatchEvent(
+    new Event(
+      inDropdownRange ? "tutorial:lock-dropdown" : "tutorial:unlock-dropdown"
+    )
+  );
+}
+
 export default function ChatTutorial() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
     if (!isTutorialDone()) {
-      // Small delay so the page renders first
       const timer = setTimeout(() => setShow(true), 500);
       return () => clearTimeout(timer);
     }
@@ -88,8 +102,16 @@ export default function ChatTutorial() {
 
   const finish = () => {
     markTutorialDone();
+    syncDropdown(-1); // ensure unlocked
     setShow(false);
   };
 
-  return <TutorialOverlay steps={STEPS} onFinish={finish} onSkip={finish} />;
+  return (
+    <TutorialOverlay
+      steps={STEPS}
+      onFinish={finish}
+      onSkip={finish}
+      onStepChange={syncDropdown}
+    />
+  );
 }

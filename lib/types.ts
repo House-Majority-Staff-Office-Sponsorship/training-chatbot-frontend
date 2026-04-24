@@ -3,6 +3,7 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+  flagged?: boolean;
 }
 
 export interface ChatSession {
@@ -77,6 +78,7 @@ export interface StoredMessage {
   role: "user" | "assistant";
   content: string;
   timestamp: number; // epoch ms
+  flagged?: boolean;
 }
 
 export interface StoredSession {
@@ -98,6 +100,7 @@ export function toStoredSession(session: ChatSession): StoredSession {
       role: m.role,
       content: m.content,
       timestamp: m.timestamp.getTime(),
+      flagged: m.flagged,
     })),
   };
 }
@@ -113,6 +116,7 @@ export function fromStoredSession(stored: StoredSession): ChatSession {
       role: m.role,
       content: m.content,
       timestamp: new Date(m.timestamp),
+      flagged: m.flagged,
     })),
   };
 }

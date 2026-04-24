@@ -1,13 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function ChatIndexPage() {
   const router = useRouter();
   const [redirecting, setRedirecting] = useState(true);
+  const startedRef = useRef(false);
 
   useEffect(() => {
+    // Guard against React StrictMode double-invoke (which was creating two
+    // empty "New conversation" sessions on first visit).
+    if (startedRef.current) return;
+    startedRef.current = true;
+
     (async () => {
       try {
         const res = await fetch("/api/sessions");

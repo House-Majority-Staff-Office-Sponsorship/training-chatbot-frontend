@@ -4,6 +4,9 @@ import {
   MessageCircleMore,
   ShieldCheck,
   History,
+  LayoutDashboard,
+  Flag,
+  Activity,
 } from "lucide-react";
 
 export default function Home() {
@@ -13,29 +16,29 @@ export default function Home() {
       style={{ fontFamily: "var(--font-dm-sans), sans-serif" }}
     >
       {/* Navigation */}
-      <nav className="sticky top-0 z-10 flex items-center justify-between px-8 py-2.5 border-b border-slate-200 bg-zinc-950/80 backdrop-blur-sm">
-        <div className="flex items-center gap-2.5">
+      <nav className="sticky top-0 z-10 flex items-center justify-between gap-2 px-4 sm:px-8 py-2.5 border-b border-slate-200 bg-zinc-950/80 backdrop-blur-sm">
+        <div className="flex items-center gap-2.5 min-w-0">
           <img
             src="https://portal.ehawaii.gov/assets/webp/elements/sliver/seal.webp"
             alt="Hawaii State Seal"
             width={36}
             height={36}
-            className="rounded"
+            className="rounded shrink-0"
           />
-          <span className="text-sm font-semibold text-white tracking-tight">
+          <span className="text-sm font-semibold text-white tracking-tight truncate">
             House Training Assistant
           </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1 sm:gap-3 shrink-0">
           <Link
             href="/quiz"
-            className="inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
+            className="hidden sm:inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
           >
             Quiz
           </Link>
           <Link
             href="/admin"
-            className="inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
+            className="hidden sm:inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
           >
             Admin
           </Link>
@@ -43,13 +46,13 @@ export default function Home() {
             href="https://hmso-training.ics.hawaii.edu/backend"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-4 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-xs font-medium rounded-md transition-colors"
+            className="hidden md:inline-flex items-center justify-center px-4 py-1.5 border border-zinc-700 text-zinc-400 hover:text-white hover:border-zinc-500 text-xs font-medium rounded-md transition-colors"
           >
             API Docs
           </a>
           <Link
             href="/chat"
-            className="inline-flex items-center justify-center px-5 py-1.5 bg-zinc-600 hover:bg-zinc-500 text-white text-xs font-medium rounded-md transition-colors"
+            className="inline-flex items-center justify-center px-3 sm:px-5 py-1.5 bg-zinc-600 hover:bg-zinc-500 text-white text-xs font-medium rounded-md transition-colors"
           >
             Open Chat
           </Link>
@@ -57,15 +60,15 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="flex-1 flex items-center px-6 pt-20 pb-5">
-        <div className="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center gap-12">
+      <section className="flex-1 flex items-center px-4 sm:px-6 pt-12 sm:pt-20 pb-5">
+        <div className="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center gap-8 md:gap-12">
           {/* Left Column */}
           <div className="flex-[3] min-w-0">
-            <p className="text-med font-semibold uppercase tracking-widest text-blue-800 mb-5">
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-blue-800 mb-3 sm:mb-5">
               House Majority Staff Office
             </p>
             <h1
-              className="text-5xl font-bold text-slate-900 leading-tight mb-6"
+              className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
               AI chats and quizzes
@@ -74,7 +77,7 @@ export default function Home() {
               <br />
               and procedure.
             </h1>
-            <p className="text-lg text-slate-500 leading-relaxed mb-10 max-w-xl">
+            <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-6 sm:mb-10 max-w-xl">
               Search House training documents, get grounded answers, and quiz yourself on what matters — all from one place.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
@@ -166,21 +169,21 @@ export default function Home() {
       {/* Features: Test Slant Section */}
       <section
         id="features"
-        className="flex flex-col items-center justify-center text-center px-6 pb-20 bg-blue-100 relative overflow-hidden"
+        className="flex flex-col items-center justify-center text-center px-4 sm:px-6 pb-12 sm:pb-20 bg-blue-100 relative overflow-hidden"
         style={{ clipPath: "polygon(0 30%, 100% 0, 100% 100%, 0 100%)" }}
       >
-        <div className="max-w-4xl mx-auto pt-40">
+        <div className="max-w-4xl mx-auto pt-24 sm:pt-40">
           <div className="max-w-4xl mx-auto">
             <h2
-              className="text-3xl font-semibold text-center text-slate-900"
+              className="text-2xl sm:text-3xl font-semibold text-center text-slate-900"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
               Built for House Staff
             </h2>
-            <p className="text-med text-center font-semibold uppercase tracking-widest text-zinc-500 mb-10">
+            <p className="text-xs sm:text-sm text-center font-semibold uppercase tracking-widest text-zinc-500 mb-6 sm:mb-10">
               Your onboarding companion
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
               {features.map((f) => (
                 <div
                   key={f.title}
@@ -205,8 +208,8 @@ export default function Home() {
       </section>
 
       {/* Feature Showcase: Chat */}
-      <section className="bg-white py-24 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
+      <section className="bg-white py-12 sm:py-24 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-16">
           <div className="flex-1 order-2 md:order-1">
             {/* Placeholder: Chat UI */}
             <div className="bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden shadow-lg">
@@ -247,7 +250,7 @@ export default function Home() {
           <div className="flex-1 order-1 md:order-2">
             <p className="text-sm font-semibold uppercase tracking-widest text-blue-600 mb-3">AI Chat Assistant</p>
             <h2
-              className="text-3xl font-bold text-slate-900 leading-snug mb-5"
+              className="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug mb-5"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
               Ask anything about
@@ -281,12 +284,12 @@ export default function Home() {
       </section>
 
       {/* Feature Showcase: Quiz */}
-      <section className="bg-slate-50 border-y border-slate-200 py-24 px-6">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16">
+      <section className="bg-slate-50 border-y border-slate-200 py-12 sm:py-24 px-4 sm:px-6">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-8 md:gap-16">
           <div className="flex-1">
             <p className="text-sm font-semibold uppercase tracking-widest text-slate-900 mb-3">AI-Generated Quizzes</p>
             <h2
-              className="text-3xl font-bold text-slate-900 leading-snug mb-5"
+              className="text-2xl sm:text-3xl font-bold text-slate-900 leading-snug mb-5"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
               Test your knowledge
@@ -369,43 +372,115 @@ export default function Home() {
       </section>
 
       {/* Knowledge source */}
-      <section className="bg-white py-20 px-6">
+      <section className="bg-white py-12 sm:py-20 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center">
-          <p className="text-med font-semibold uppercase tracking-widest text-zinc-500 mb-4">
+          <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-zinc-500 mb-4">
             Knowledge source
           </p>
           <h2
-            className="text-3xl font-semibold text-slate-900 mb-6"
+            className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-6"
             style={{ fontFamily: "var(--font-lora), serif" }}
           >
             Powered by Vertex AI &amp; RAG Engine
           </h2>
-          <p className="text-slate-500 text-base leading-relaxed mb-3">
+          <p className="text-sm sm:text-base text-slate-500 leading-relaxed mb-3">
             All official House training documents are indexed in Google Cloud&apos;s
             Vertex AI RAG Engine, which the assistant queries to ground every
             answer in cited source material.
           </p>
-          <p className="text-slate-500 text-base leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-500 leading-relaxed">
             Contact your admin to upload any missing sources, or if you&apos;d
             like to request access to additional materials.
           </p>
         </div>
       </section>
 
+      {/* Admin Portal */}
+      <section className="bg-slate-50 border-t border-slate-200 py-12 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-8 sm:mb-12">
+            <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-slate-500 mb-3">
+              For administrators
+            </p>
+            <h2
+              className="text-2xl sm:text-3xl font-semibold text-slate-900 mb-4"
+              style={{ fontFamily: "var(--font-lora), serif" }}
+            >
+              An admin portal to monitor every conversation
+            </h2>
+            <p className="text-sm sm:text-base text-slate-500 leading-relaxed max-w-2xl mx-auto">
+              Authorized staff can review every chat session stored in the
+              system, audit how the assistant is being used, and follow up on
+              responses users have flagged for attention.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-8">
+            <div className="bg-white border border-slate-200 rounded-lg p-5">
+              <div className="w-9 h-9 rounded-md bg-blue-50 flex items-center justify-center mb-3">
+                <LayoutDashboard size={16} className="text-blue-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                Conversation review
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Browse every session with title, user ID, message count, and
+                last activity. Drill into any conversation to read the full
+                exchange.
+              </p>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-lg p-5">
+              <div className="w-9 h-9 rounded-md bg-amber-50 flex items-center justify-center mb-3">
+                <Flag size={16} className="text-amber-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                Flagged responses
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Users can flag any AI answer that seems wrong or off. Filter
+                the admin list to show only sessions that need review.
+              </p>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-lg p-5">
+              <div className="w-9 h-9 rounded-md bg-green-50 flex items-center justify-center mb-3">
+                <Activity size={16} className="text-green-500" />
+              </div>
+              <h3 className="text-sm font-semibold text-slate-900 mb-1">
+                Agent telemetry
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                See per-session agent event logs, token usage, and deep
+                research output for any conversation that ran the multi-agent
+                pipeline.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex justify-center">
+            <Link
+              href="/admin"
+              className="inline-flex items-center justify-center px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium rounded-md transition-colors"
+            >
+              Open admin portal &rarr;
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Get Started: Test Slant Section */}
       <section
         id="features"
-        className="flex flex-col items-center justify-center text-center px-6 py-15 bg-blue-100 relative overflow-hidden"
+        className="flex flex-col items-center justify-center text-center px-4 sm:px-6 py-10 sm:py-15 bg-blue-100 relative overflow-hidden"
       >
         <div className="max-w-4xl mx-auto">
           <div className="max-w-4xl mx-auto">
             <h2
-              className="text-3xl font-semibold text-center text-slate-900 mb-6"
+              className="text-2xl sm:text-3xl font-semibold text-center text-slate-900 mb-6"
               style={{ fontFamily: "var(--font-lora), serif" }}
             >
               Your Training Starts Here
             </h2>
-            <p className="text-lg text-slate-500 leading-relaxed mb-5 max-w-xl mx-auto">
+            <p className="text-base sm:text-lg text-slate-500 leading-relaxed mb-5 max-w-xl mx-auto">
               Ask questions, review procedures, and test your knowledge — all
               backed by official House training materials and available whenever
               you need it.
@@ -419,7 +494,7 @@ export default function Home() {
               </Link>
               <Link
                 href="/quiz"
-                className="inline-flex items-center justify-center px-15 py-3 border border-slate-200 text-slate-700 text-sm font-medium rounded-md bg-white hover:bg-blue-500 hover:text-white transition-colors"
+                className="inline-flex items-center justify-center px-7 sm:px-15 py-3 border border-slate-200 text-slate-700 text-sm font-medium rounded-md bg-white hover:bg-blue-500 hover:text-white transition-colors"
               >
                 Take a quiz
               </Link>

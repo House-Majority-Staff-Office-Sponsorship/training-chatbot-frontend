@@ -25,6 +25,26 @@ export default function ChatInput({
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownLockedRef = useRef(false);
+
+  // Tutorial drives the dropdown open/closed via events so the overlay can
+  // highlight model options without the user clicking.
+  useEffect(() => {
+    const lock = () => {
+      dropdownLockedRef.current = true;
+      setDropdownOpen(true);
+    };
+    const unlock = () => {
+      dropdownLockedRef.current = false;
+      setDropdownOpen(false);
+    };
+    window.addEventListener("tutorial:lock-dropdown", lock);
+    window.addEventListener("tutorial:unlock-dropdown", unlock);
+    return () => {
+      window.removeEventListener("tutorial:lock-dropdown", lock);
+      window.removeEventListener("tutorial:unlock-dropdown", unlock);
+    };
+  }, []);
 
   const isExtended = searchMode === "quick-pro";
   const isDeep = searchMode === "deep";
@@ -36,9 +56,10 @@ export default function ChatInput({
     }
   }, [disabled]);
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click (skipped while the tutorial has it locked)
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
+      if (dropdownLockedRef.current) return;
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(e.target as Node)

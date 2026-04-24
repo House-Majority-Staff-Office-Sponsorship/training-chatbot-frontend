@@ -35,23 +35,7 @@ export default function AgentLogPanel({
 
   return (
     <>
-      {/* Toggle tab - always visible on the right edge */}
-      {!isOpen && (
-        <button
-          onClick={onToggle}
-          className="flex-shrink-0 w-8 bg-[#2d2d2d] text-[#569cd6] flex items-center justify-center hover:bg-[#3d3d3d] transition-colors cursor-pointer"
-          aria-label="Open agent logs"
-        >
-          <span
-            className="text-xs font-mono whitespace-nowrap"
-            style={{ writingMode: "vertical-rl" }}
-          >
-            Agent Logs {logs.length > 0 && `(${logs.length})`}
-          </span>
-        </button>
-      )}
-
-      {/* Panel - inline, not fixed */}
+      {/* Panel - inline, not fixed (toggled from the sidebar) */}
       {isOpen && (
         <div className="flex-shrink-0 w-[380px] bg-[#1e1e1e] flex flex-col border-l border-[#404040]">
           {/* Header */}

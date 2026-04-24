@@ -7,6 +7,7 @@ import {
   Trash2,
   ShieldAlert,
   ChevronDown,
+  Flag,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -57,6 +58,19 @@ function formatDate(ms: number): string {
   });
 }
 
+function formatDateShort(ms: number): string {
+  return new Date(ms).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function truncate(s: string, n: number): string {
+  return s.length > n ? s.slice(0, n).trimEnd() + "…" : s;
+}
+
 const PAGE_SIZE = 50;
 const ACK_KEY = "hmso_admin_convos_ack";
 
@@ -72,6 +86,8 @@ export default function AdminConversations() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [actionsOpen, setActionsOpen] = useState(false);
   const [deletingSelected, setDeletingSelected] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
   const actionsRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -99,12 +115,15 @@ export default function AdminConversations() {
 
   const toggleAll = useCallback(() => {
     setSelectedIds((prev) => {
-      if (prev.size === sessions.length && sessions.length > 0) {
+      const target = flaggedOnly
+        ? sessions.filter((s) => s.messages?.some((m) => m.flagged))
+        : sessions;
+      if (prev.size === target.length && target.length > 0) {
         return new Set();
       }
-      return new Set(sessions.map((s) => s.id));
+      return new Set(target.map((s) => s.id));
     });
-  }, [sessions]);
+  }, [sessions, flaggedOnly]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -172,16 +191,14 @@ export default function AdminConversations() {
     fetchPage(cursor, "append");
   }, [cursor, loadingMore, fetchPage]);
 
-  const deleteSelected = useCallback(async () => {
+  const requestDeleteSelected = useCallback(() => {
     if (selectedIds.size === 0) return;
-    const ok = window.confirm(
-      `Delete ${selectedIds.size} selected ${
-        selectedIds.size === 1 ? "conversation" : "conversations"
-      }? This cannot be undone.`
-    );
-    if (!ok) return;
-
     setActionsOpen(false);
+    setConfirmOpen(true);
+  }, [selectedIds]);
+
+  const performDeleteSelected = useCallback(async () => {
+    setConfirmOpen(false);
     setDeletingSelected(true);
     setError(null);
 
@@ -249,17 +266,17 @@ export default function AdminConversations() {
     );
   }
 
+  const sessionHasFlag = (s: AdminSessionSummary): boolean =>
+    !!s.messages?.some((m) => m.flagged);
+  const visibleSessions = flaggedOnly
+    ? sessions.filter(sessionHasFlag)
+    : sessions;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-400">
           All Conversations
-          {sessions.length > 0 && (
-            <span className="ml-2 text-slate-400 normal-case tracking-normal">
-              ({sessions.length}
-              {hasMore ? "+" : ""})
-            </span>
-          )}
         </h2>
         <div className="flex items-center gap-3">
           {selectedIds.size > 0 && (
@@ -267,6 +284,21 @@ export default function AdminConversations() {
               {selectedIds.size} selected
             </span>
           )}
+          <button
+            onClick={() => setFlaggedOnly((v) => !v)}
+            className={`flex items-center gap-1.5 text-xs transition-colors px-2 py-0.5 rounded-md border ${
+              flaggedOnly
+                ? "bg-amber-50 border-amber-200 text-amber-700"
+                : "border-transparent text-slate-500 hover:text-slate-900"
+            }`}
+            title="Show only sessions with flagged AI responses"
+          >
+            <Flag
+              size={12}
+              fill={flaggedOnly ? "currentColor" : "none"}
+            />
+            Flagged
+          </button>
           <button
             onClick={refresh}
             disabled={loading || loadingMore || deletingSelected}
@@ -292,7 +324,7 @@ export default function AdminConversations() {
             {actionsOpen && (
               <div className="absolute right-0 mt-1 w-52 bg-white border border-slate-200 rounded-lg shadow-lg overflow-hidden z-20">
                 <button
-                  onClick={deleteSelected}
+                  onClick={requestDeleteSelected}
                   disabled={selectedIds.size === 0 || deletingSelected}
                   className="w-full text-left px-3 py-2 text-xs font-medium text-red-600 hover:bg-red-50 transition-colors disabled:text-slate-300 disabled:hover:bg-transparent flex items-center gap-2"
                 >
@@ -315,118 +347,109 @@ export default function AdminConversations() {
 
       {!error && (
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100">
-                <th className="px-4 py-3 w-10">
-                  <input
-                    type="checkbox"
-                    aria-label="Select all"
-                    checked={
-                      sessions.length > 0 && selectedIds.size === sessions.length
-                    }
-                    ref={(el) => {
-                      if (el)
-                        el.indeterminate =
-                          selectedIds.size > 0 &&
-                          selectedIds.size < sessions.length;
-                    }}
-                    onChange={toggleAll}
-                    className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                  Title
-                </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-slate-400 hidden md:table-cell">
-                  User
-                </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-slate-400 hidden sm:table-cell">
-                  Messages
-                </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-slate-400 hidden lg:table-cell">
-                  Last message
-                </th>
-                <th className="text-left px-5 py-3 text-xs font-semibold uppercase tracking-widest text-slate-400">
-                  Updated
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading && sessions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-xs text-slate-400">
-                    Loading sessions from Redis...
-                  </td>
-                </tr>
-              ) : sessions.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-5 py-8 text-center text-xs text-slate-400">
-                    No conversations stored yet.
-                  </td>
-                </tr>
-              ) : (
-                sessions.map((s, i) => (
-                  <tr
+          {/* Header row with select-all */}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-100 bg-slate-50/60">
+            <input
+              type="checkbox"
+              aria-label="Select all"
+              checked={
+                visibleSessions.length > 0 &&
+                selectedIds.size === visibleSessions.length
+              }
+              ref={(el) => {
+                if (el)
+                  el.indeterminate =
+                    selectedIds.size > 0 &&
+                    selectedIds.size < visibleSessions.length;
+              }}
+              onChange={toggleAll}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+              {flaggedOnly
+                ? `Flagged (${visibleSessions.length})`
+                : sessions.length > 0
+                  ? `Conversations (${sessions.length}${hasMore ? "+" : ""})`
+                  : "Conversations"}
+            </span>
+          </div>
+
+          {loading && sessions.length === 0 ? (
+            <div className="px-3 py-8 text-center text-xs text-slate-400">
+              Loading sessions from Redis...
+            </div>
+          ) : visibleSessions.length === 0 ? (
+            <div className="px-3 py-8 text-center text-xs text-slate-400">
+              {flaggedOnly
+                ? "No flagged sessions."
+                : "No conversations stored yet."}
+            </div>
+          ) : (
+            <ul className="divide-y divide-slate-100">
+              {visibleSessions.map((s) => {
+                const checked = selectedIds.has(s.id);
+                const flagCount =
+                  s.messages?.filter((m) => m.flagged).length ?? 0;
+                return (
+                  <li
                     key={s.id}
                     onClick={() => setSelectedId(s.id)}
-                    className={`${
-                      i !== sessions.length - 1
-                        ? "border-b border-slate-100"
-                        : ""
-                    } ${
-                      selectedIds.has(s.id) ? "bg-blue-50/40" : ""
-                    } hover:bg-slate-50 cursor-pointer transition-colors`}
+                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer transition-colors ${
+                      checked ? "bg-blue-50/40" : "hover:bg-slate-50"
+                    }`}
                   >
-                    <td
-                      className="px-4 py-3.5 w-10"
+                    <input
+                      type="checkbox"
+                      aria-label={`Select ${s.title || "session"}`}
+                      checked={checked}
+                      onChange={() => toggleOne(s.id)}
                       onClick={(e) => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${s.title || "session"}`}
-                        checked={selectedIds.has(s.id)}
-                        onChange={() => toggleOne(s.id)}
-                        className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                      />
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="text-sm font-medium text-slate-800 truncate max-w-xs block">
-                        {s.title || "Untitled"}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 hidden md:table-cell">
-                      <span className="text-xs font-mono text-slate-500" title={s.anonId}>
-                        {s.anonId.slice(0, 8)}…
-                      </span>
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-500 hidden sm:table-cell">
-                      {s.messages?.length ?? 0}
-                    </td>
-                    <td className="px-5 py-3.5 text-xs hidden lg:table-cell">
-                      <p className="text-slate-400 truncate max-w-md">
-                        {s.lastMessage || "—"}
+                      className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-slate-800 truncate leading-tight flex items-center gap-1.5">
+                        {flagCount > 0 && (
+                          <Flag
+                            size={11}
+                            className="text-amber-500 shrink-0"
+                            fill="currentColor"
+                            aria-label={`${flagCount} flagged response${flagCount === 1 ? "" : "s"}`}
+                          />
+                        )}
+                        <span className="truncate">
+                          {s.title || "Untitled"}
+                        </span>
                       </p>
-                      {s.messages && s.messages.length > 0 && (
-                        <p className="text-[10px] text-slate-400 mt-0.5">
-                          {formatDate(
-                            s.messages[s.messages.length - 1].timestamp
-                          )}
-                        </p>
-                      )}
-                    </td>
-                    <td className="px-5 py-3.5 text-xs text-slate-400 whitespace-nowrap">
-                      {formatDate(s.updatedAt)}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                      <p
+                        className="text-[10px] text-slate-400 truncate leading-tight mt-0.5"
+                        title={s.lastMessage || ""}
+                      >
+                        <span className="font-mono" title={s.anonId}>
+                          {s.anonId.slice(0, 8)}
+                        </span>
+                        {" · "}
+                        {s.messages?.length ?? 0} msg
+                        {flagCount > 0
+                          ? ` · ${flagCount} flagged`
+                          : ""}
+                        {s.lastMessage ? ` · ${truncate(s.lastMessage, 50)}` : ""}
+                      </p>
+                    </div>
+                    <span
+                      className="text-[10px] text-slate-400 shrink-0 whitespace-nowrap"
+                      title={new Date(s.updatedAt).toLocaleString()}
+                    >
+                      {formatDateShort(s.updatedAt)}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
 
           {/* Load more */}
           {hasMore && sessions.length > 0 && (
-            <div className="border-t border-slate-100 px-5 py-3 flex justify-center">
+            <div className="border-t border-slate-100 px-3 py-2 flex justify-center">
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
@@ -445,6 +468,90 @@ export default function AdminConversations() {
           onClose={() => setSelectedId(null)}
         />
       )}
+
+      {confirmOpen && (
+        <DeleteConfirmModal
+          count={selectedIds.size}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={performDeleteSelected}
+        />
+      )}
+    </div>
+  );
+}
+
+function DeleteConfirmModal({
+  count,
+  onCancel,
+  onConfirm,
+}: {
+  count: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const [text, setText] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const ready = text.trim().toLowerCase() === "delete";
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="w-full max-w-md bg-white rounded-xl shadow-xl border border-slate-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-5 py-4 border-b border-slate-100">
+          <h3 className="text-base font-semibold text-slate-900">
+            Confirm delete
+          </h3>
+        </div>
+        <div className="px-5 py-4">
+          <p className="text-sm text-slate-600 leading-relaxed mb-4">
+            You are about to permanently delete{" "}
+            <strong>
+              {count} {count === 1 ? "conversation" : "conversations"}
+            </strong>
+            . This cannot be undone.
+          </p>
+          <label className="block text-xs font-medium text-slate-600 mb-1.5">
+            Type <span className="font-mono text-red-600">delete</span> to
+            confirm
+          </label>
+          <input
+            ref={inputRef}
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && ready) onConfirm();
+              if (e.key === "Escape") onCancel();
+            }}
+            placeholder="delete"
+            className="w-full px-3 py-2 text-sm border border-slate-200 rounded-md outline-none focus:border-red-400 focus:ring-1 focus:ring-red-200"
+          />
+        </div>
+        <div className="px-5 py-3 border-t border-slate-100 flex justify-end gap-2 bg-slate-50 rounded-b-xl">
+          <button
+            onClick={onCancel}
+            className="px-3 py-1.5 text-sm font-medium text-slate-600 border border-slate-200 bg-white hover:bg-slate-100 rounded-md transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={!ready}
+            className="px-3 py-1.5 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors disabled:bg-red-300 disabled:cursor-not-allowed"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -459,7 +566,7 @@ function SessionDetailDrawer({
   const [detail, setDetail] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tab, setTab] = useState<"messages" | "history" | "logs" | "research">(
+  const [tab, setTab] = useState<"messages" | "logs" | "research">(
     "messages"
   );
 
@@ -517,7 +624,7 @@ function SessionDetailDrawer({
 
         {/* Tabs */}
         <div className="flex border-b border-slate-200 px-5 gap-4">
-          {(["messages", "history", "logs", "research"] as const).map((t) => (
+          {(["messages", "logs", "research"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -543,7 +650,6 @@ function SessionDetailDrawer({
           {detail && !loading && (
             <>
               {tab === "messages" && <MessagesView messages={detail.session.messages} />}
-              {tab === "history" && <HistoryView history={detail.history} />}
               {tab === "logs" && <LogsView logs={detail.logs} />}
               {tab === "research" && <ResearchView research={detail.research} />}
             </>
@@ -580,12 +686,22 @@ function MessagesView({ messages }: { messages: StoredMessage[] }) {
           className={`rounded-lg px-3 py-2.5 text-sm ${
             m.role === "user"
               ? "bg-blue-50 border border-blue-100 ml-8"
-              : "bg-slate-50 border border-slate-200 mr-8"
+              : m.flagged
+                ? "bg-amber-50 border border-amber-200 mr-8"
+                : "bg-slate-50 border border-slate-200 mr-8"
           }`}
         >
           <div className="flex items-center justify-between mb-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1">
               {m.role}
+              {m.flagged && (
+                <Flag
+                  size={10}
+                  className="text-amber-600"
+                  fill="currentColor"
+                  aria-label="flagged"
+                />
+              )}
             </span>
             <span className="text-[10px] text-slate-400">
               {formatDate(m.timestamp)}
@@ -597,33 +713,6 @@ function MessagesView({ messages }: { messages: StoredMessage[] }) {
             <p className="whitespace-pre-wrap text-slate-800 leading-relaxed">
               {m.content}
             </p>
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function HistoryView({ history }: { history: ConversationMessage[] }) {
-  if (!history || history.length === 0) {
-    return <p className="text-xs text-slate-400">No conversation history.</p>;
-  }
-  return (
-    <div className="space-y-2">
-      {history.map((m, i) => (
-        <div
-          key={i}
-          className="rounded-lg px-3 py-2 text-xs bg-slate-50 border border-slate-200"
-        >
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 block mb-1">
-            {m.role}
-          </span>
-          {m.role === "assistant" ? (
-            <Markdown>{m.content}</Markdown>
-          ) : (
-            <span className="text-slate-700 whitespace-pre-wrap">
-              {m.content}
-            </span>
           )}
         </div>
       ))}
