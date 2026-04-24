@@ -15,6 +15,8 @@ import {
   SearchMode,
   PendingConfirmation,
 } from "@/lib/types";
+
+const MAX_CONVERSATION_MESSAGES = 30;
 import {
   checkIntent,
   fetchConversational,
@@ -28,7 +30,7 @@ import { useSessionListContext } from "@/contexts/SessionListContext";
 export default function ChatSessionPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
-  const { updateSessionInList } = useSessionListContext();
+  const { updateSessionInList, startNewChat } = useSessionListContext();
 
   const {
     session,
@@ -49,6 +51,9 @@ export default function ChatSessionPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const sendingRef = useRef(false);
+
+  const atLimit = session.messages.length >= MAX_CONVERSATION_MESSAGES;
 
   // Search mode
   const [searchMode, setSearchMode] = useState<SearchMode>("quick");
@@ -235,7 +240,9 @@ export default function ChatSessionPage() {
   }, [pendingConfirmation, searchMode, addAssistantMessage, appendToHistory, getConversationHistory, setLogs, setDeepResult, setResearchers, persistExtras]);
 
   async function handleSend(content: string) {
-    if (loading) return;
+    if (sendingRef.current || loading) return;
+    if (session.messages.length >= MAX_CONVERSATION_MESSAGES) return;
+    sendingRef.current = true;
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
@@ -264,6 +271,10 @@ export default function ChatSessionPage() {
           addAssistantMessage(intent.message);
           appendToHistory("user", content);
           appendToHistory("assistant", intent.message);
+          // addAssistantMessage persisted the historyCache *before* the
+          // appendToHistory calls above, so trigger a follow-up write to
+          // make sure this turn is saved to Redis.
+          setTimeout(() => persistExtras(), 100);
           setLoading(false);
           return;
 
@@ -365,11 +376,14 @@ export default function ChatSessionPage() {
         "The assistant is unavailable right now. Please try again later."
       );
       setLoading(false);
+    } finally {
+      sendingRef.current = false;
     }
   }
 
   const handleEscalate = useCallback(async () => {
-    if (!escalationContext) return;
+    if (sendingRef.current || !escalationContext) return;
+    sendingRef.current = true;
     setSatisfaction("escalated");
     setLoading(true);
     setError(null);
@@ -392,6 +406,7 @@ export default function ChatSessionPage() {
     } finally {
       setLoading(false);
       setEscalationContext(null);
+      sendingRef.current = false;
     }
   }, [escalationContext, getConversationHistory, addAssistantMessage, appendToHistory, setLogs, persistExtras]);
 
@@ -501,12 +516,26 @@ export default function ChatSessionPage() {
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <div className="bg-gradient-to-t from-slate-50 from-60% to-transparent pt-8 pb-4 pointer-events-auto">
             <div className="max-w-3xl mx-auto px-4">
-              <ChatInput
-                onSend={handleSend}
-                disabled={loading}
-                searchMode={searchMode}
-                onSearchModeChange={setSearchMode}
-              />
+              {atLimit ? (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+                  <p className="text-sm text-amber-800">
+                    This conversation has reached its {MAX_CONVERSATION_MESSAGES}-message limit. Start a new conversation to continue.
+                  </p>
+                  <button
+                    onClick={startNewChat}
+                    className="shrink-0 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors"
+                  >
+                    New conversation
+                  </button>
+                </div>
+              ) : (
+                <ChatInput
+                  onSend={handleSend}
+                  disabled={loading}
+                  searchMode={searchMode}
+                  onSearchModeChange={setSearchMode}
+                />
+              )}
               <p className="text-center text-xs text-slate-400 mt-2">
                 Sponsored by the House of Majority Staff Office (HMSO)
               </p>

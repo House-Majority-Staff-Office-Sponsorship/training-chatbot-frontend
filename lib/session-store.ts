@@ -189,3 +189,123 @@ export async function getResearch(
 ): Promise<StoredResearch | null> {
   return redis.get<StoredResearch>(researchKey(sessionId));
 }
+
+/** Get a single session by ID (no user scoping). */
+export async function getSessionById(
+  sessionId: string
+): Promise<StoredSession | null> {
+  return redis.get<StoredSession>(sessionKey(sessionId));
+}
+
+export type AdminSessionSummary = StoredSession & { anonId: string };
+
+export interface PaginatedSessions {
+  sessions: AdminSessionSummary[];
+  nextCursor: string | null;
+}
+
+/**
+ * Cursor-paginated scan over every user's sessions. Each call advances the
+ * SCAN cursor until at least `pageSize` sessions have been collected (or
+ * the scan is exhausted). User-key fetches within a batch run in parallel.
+ *
+ * NOTE: SCAN order is not deterministic, so global sort across pages is
+ * best-effort — sessions are sorted newest-first within each page.
+ */
+export async function listAllSessions({
+  cursor = 0,
+  pageSize = 50,
+}: {
+  cursor?: string | number;
+  pageSize?: number;
+} = {}): Promise<PaginatedSessions> {
+  const bySessionId = new Map<string, AdminSessionSummary>();
+  const visitedUserKeys = new Set<string>();
+  let nextCursor: string | number = cursor;
+
+  do {
+    const scanRes = (await redis.scan(nextCursor, {
+      match: "user:*:sessions",
+      count: 100,
+    })) as [string | number, string[]];
+    nextCursor = scanRes[0];
+    const keys = scanRes[1];
+
+    const newKeys = keys.filter((k) => {
+      if (visitedUserKeys.has(k)) return false;
+      visitedUserKeys.add(k);
+      return true;
+    });
+
+    const userBatches = await Promise.all(
+      newKeys.map(async (userKey) => {
+        const anonId = userKey.slice("user:".length, -":sessions".length);
+        const ids = await redis.zrange<string[]>(userKey, 0, -1, { rev: true });
+        if (!ids || ids.length === 0) return [] as AdminSessionSummary[];
+
+        const pipeline = redis.pipeline();
+        for (const id of ids) pipeline.get(sessionKey(id));
+        const results = await pipeline.exec<(StoredSession | null)[]>();
+
+        const out: AdminSessionSummary[] = [];
+        for (const data of results) {
+          if (data) out.push({ ...data, anonId });
+        }
+        return out;
+      })
+    );
+
+    for (const batch of userBatches) {
+      for (const s of batch) {
+        if (!bySessionId.has(s.id)) bySessionId.set(s.id, s);
+      }
+    }
+  } while (
+    nextCursor !== 0 &&
+    nextCursor !== "0" &&
+    bySessionId.size < pageSize
+  );
+
+  const done = nextCursor === 0 || nextCursor === "0";
+  const sessions = Array.from(bySessionId.values()).sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  );
+
+  return {
+    sessions,
+    nextCursor: done ? null : String(nextCursor),
+  };
+}
+
+/** Delete every session, history, log, research key, and user ZSET in Redis. */
+export async function deleteAllSessions(): Promise<{ deleted: number }> {
+  let deleted = 0;
+  let cursor: string | number = 0;
+
+  do {
+    const scanRes = (await redis.scan(cursor, {
+      match: "user:*:sessions",
+      count: 100,
+    })) as [string | number, string[]];
+    cursor = scanRes[0];
+    const keys = scanRes[1];
+
+    for (const userKey of keys) {
+      const ids = await redis.zrange<string[]>(userKey, 0, -1);
+      if (ids && ids.length > 0) {
+        const pipeline = redis.pipeline();
+        for (const id of ids) {
+          pipeline.del(sessionKey(id));
+          pipeline.del(historyKey(id));
+          pipeline.del(logsKey(id));
+          pipeline.del(researchKey(id));
+        }
+        await pipeline.exec();
+        deleted += ids.length;
+      }
+      await redis.del(userKey);
+    }
+  } while (cursor !== 0 && cursor !== "0");
+
+  return { deleted };
+}

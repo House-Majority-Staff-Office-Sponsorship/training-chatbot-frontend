@@ -3,10 +3,8 @@ import Link from "next/link";
 import {
   MessageCircleMore,
   ShieldCheck,
-  FileSpreadsheet,
   History,
 } from "lucide-react";
-import { MOCK_DOCUMENTS } from "@/lib/admin";
 
 export default function Home() {
   return (
@@ -34,6 +32,12 @@ export default function Home() {
             className="inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
           >
             Quiz
+          </Link>
+          <Link
+            href="/admin"
+            className="inline-flex items-center justify-center px-4 py-1.5 text-zinc-400 hover:text-white text-xs font-medium transition-colors"
+          >
+            Admin
           </Link>
           <a
             href="https://hmso-training.ics.hawaii.edu/backend"
@@ -364,44 +368,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Library */}
+      {/* Knowledge source */}
       <section className="bg-white py-20 px-6">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row gap-12 items-center">
-          {/* Left Column — Text */}
-          <div className="flex-1">
-            <h2
-              className="text-3xl font-semibold text-slate-900 mb-4"
-              style={{ fontFamily: "var(--font-lora), serif" }}
-            >
-              Training Library
-            </h2>
-            <p className="text-med font-semibold uppercase tracking-widest text-zinc-500 mb-4">
-              Popular resources
-            </p>
-            <p className="text-slate-500 text-sm leading-relaxed mb-6">
-              Browse official House training materials to help you navigate
-              procedures, policies, and your role as a session hire.
-            </p>
-            <p className="text-sm font-semibold uppercase tracking-widest text-blue-500">
-              View all documents →
-            </p>
-          </div>
-          {/* Right Column — Stacked Cards */}
-          <div className="flex flex-col gap-4 flex-1">
-            {documents.map((d) => (
-              <div
-                key={d.title}
-                className="bg-white rounded-lg border border-slate-200 p-6 transition-transform duration-200 hover:-translate-y-1 hover:shadow-md"
-              >
-                <div className="flex items-center gap-2">
-                  <FileSpreadsheet size={20} className="text-blue-500" />
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    {d.title}
-                  </h3>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-med font-semibold uppercase tracking-widest text-zinc-500 mb-4">
+            Knowledge source
+          </p>
+          <h2
+            className="text-3xl font-semibold text-slate-900 mb-6"
+            style={{ fontFamily: "var(--font-lora), serif" }}
+          >
+            Powered by Vertex AI &amp; RAG Engine
+          </h2>
+          <p className="text-slate-500 text-base leading-relaxed mb-3">
+            All official House training documents are indexed in Google Cloud&apos;s
+            Vertex AI RAG Engine, which the assistant queries to ground every
+            answer in cited source material.
+          </p>
+          <p className="text-slate-500 text-base leading-relaxed">
+            Contact your admin to upload any missing sources, or if you&apos;d
+            like to request access to additional materials.
+          </p>
         </div>
       </section>
 
@@ -471,4 +458,3 @@ const features = [
   },
 ];
 
-const documents = MOCK_DOCUMENTS.slice(0, 4);

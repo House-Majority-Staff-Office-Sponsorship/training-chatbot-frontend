@@ -62,7 +62,9 @@ export default function ChatLayout({
   }
 
   return (
-    <SessionListContext.Provider value={{ updateSessionInList }}>
+    <SessionListContext.Provider
+      value={{ updateSessionInList, startNewChat: handleNewChat }}
+    >
       <div className="flex h-screen overflow-hidden bg-slate-50">
         <Sidebar
           sessions={sessions}
