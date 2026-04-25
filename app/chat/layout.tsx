@@ -35,12 +35,10 @@ export default function ChatLayout({
   function handleDeleteSession(id: string) {
     const nextId = deleteSession(id);
     if (id === activeSessionId) {
-      if (nextId) {
-        router.push(`/chat/${nextId}`);
-      } else {
-        const newId = createSession();
-        router.push(`/chat/${newId}`);
-      }
+      // If another session remains, switch to it. If not, route to /chat
+      // (which shows an empty state — we deliberately do NOT auto-create
+      // a new session, so deleting your last one doesn't spawn another).
+      router.push(nextId ? `/chat/${nextId}` : "/chat");
     }
   }
 
