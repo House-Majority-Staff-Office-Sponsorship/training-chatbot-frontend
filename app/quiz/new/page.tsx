@@ -14,7 +14,7 @@ const QUIZ_SUGGESTIONS = [
   { label: "Committee Procedures", topic: "committee procedures, hearings, and reports" },
   { label: "Staff Onboarding", topic: "new hire onboarding process and orientation" },
   { label: "Floor Procedures", topic: "floor session procedures and decorum rules" },
-  { label: "HMSO Services", topic: "House Majority Staff Office services and responsibilities" },
+  { label: "HMSO Services", topic: "Hawaii State House Majority Staff Office services and responsibilities" },
 ];
 
 export default function NewQuizPage() {
@@ -187,7 +187,7 @@ export default function NewQuizPage() {
       </div>
 
       <p className="text-center text-xs text-slate-400 mt-4">
-        Sponsored by the House of Majority Staff Office (HMSO)
+        Sponsored by the Hawaii State House of Representatives Majority Staff Office (HMSO)
       </p>
 
       <QuizTutorial />

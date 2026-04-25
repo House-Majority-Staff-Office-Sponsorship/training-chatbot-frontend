@@ -65,7 +65,7 @@ export default function Home() {
           {/* Left Column */}
           <div className="flex-[3] min-w-0">
             <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-blue-800 mb-3 sm:mb-5">
-              House Majority Staff Office
+              Hawaii State House Majority Staff Office
             </p>
             <h1
               className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 leading-tight mb-4 sm:mb-6"
@@ -102,7 +102,7 @@ export default function Home() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" style={{ width: 380, maxWidth: "none" }}>
               <Image
                 src="/capitol.png"
-                alt="U.S. Capitol"
+                alt="Hawaii State Capitol"
                 width={380}
                 height={228}
                 className="rounded-xl object-cover opacity-90 w-full h-auto"
@@ -127,7 +127,7 @@ export default function Home() {
                   <div className="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center text-[7px] font-bold text-slate-600 shrink-0">AI</div>
                   <div className="bg-slate-50 border border-slate-200 text-slate-600 text-[9px] rounded-lg rounded-tl-sm px-2.5 py-1.5 max-w-[170px]">
                     Staff must maintain decorum, wear IDs at all times...
-                    <span className="block text-blue-500 text-[8px] mt-1">Source: House Ethics Manual</span>
+                    <span className="block text-blue-500 text-[8px] mt-1">Source: HRS Chapter 84 (State Ethics Code)</span>
                   </div>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export default function Home() {
                   <div className="bg-white border border-slate-200 text-slate-700 text-sm rounded-2xl rounded-tl-sm px-4 py-3 max-w-sm">
                     <p className="font-medium mb-1.5">House staff are subject to several ethics rules:</p>
                     <p className="text-slate-500 text-xs leading-relaxed">Staff must maintain order and decorum, wear IDs at all times, and maintain confidentiality for conversations with representatives...</p>
-                    <p className="text-blue-500 text-[10px] mt-2 font-medium">Source: House Ethics Manual, HSAA Operations Guide</p>
+                    <p className="text-blue-500 text-[10px] mt-2 font-medium">Source: HRS Chapter 84, HMSO Operations Guide</p>
                   </div>
                 </div>
                 <div className="flex gap-3 items-center pl-10">
@@ -359,7 +359,7 @@ export default function Home() {
                 </div>
                 <div className="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 mb-4">
                   <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">Source</p>
-                  <p className="text-[10px] text-slate-500">House Ethics Manual, &sect;3.4</p>
+                  <p className="text-[10px] text-slate-500">HRS &sect;84-13, State Ethics Code</p>
                   <p className="text-[10px] text-green-600 mt-0.5">Correct &mdash; Great job!</p>
                 </div>
                 <div className="bg-[#1a2332] text-white text-xs font-medium py-2.5 rounded-lg text-center">
@@ -505,8 +505,8 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 px-8 py-5 text-center text-xs text-slate-400">
-        House Majority Staff Office &mdash; Training Chatbot &mdash; For
-        internal use only
+        Hawaii State House of Representatives Majority Staff Office &mdash;
+        Training Chatbot &mdash; For internal use only
       </footer>
     </main>
   );

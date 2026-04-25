@@ -5,16 +5,11 @@ import { useParams } from "next/navigation";
 import Image from "next/image";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
-import IntentConfirmation from "@/components/IntentConfirmation";
 import AgentLogPanel from "@/components/AgentLogPanel";
 import DeepResearchProgress from "@/components/DeepResearchProgress";
 import DeepResearchPanel from "@/components/DeepResearchPanel";
 import ChatTutorial from "@/components/ChatTutorial";
-import {
-  Message,
-  SearchMode,
-  PendingConfirmation,
-} from "@/lib/types";
+import { Message, SearchMode } from "@/lib/types";
 
 const MAX_CONVERSATION_MESSAGES = 30;
 import {
@@ -58,10 +53,6 @@ export default function ChatSessionPage() {
 
   // Search mode
   const [searchMode, setSearchMode] = useState<SearchMode>("quick");
-
-  // Intent confirmation
-  const [pendingConfirmation, setPendingConfirmation] =
-    useState<PendingConfirmation | null>(null);
 
   // Escalation flow: satisfaction check after Flash answer
   const [satisfaction, setSatisfaction] = useState<"pending" | "satisfied" | "escalated" | null>(null);
@@ -109,141 +100,7 @@ export default function ChatSessionPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [session.messages, pendingConfirmation, deepRunning, satisfaction]);
-
-  const handleConfirm = useCallback(async () => {
-    if (!pendingConfirmation) return;
-    const { query, enrichedQuery } = pendingConfirmation;
-    setPendingConfirmation(null);
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (searchMode === "deep") {
-        setDeepRunning(true);
-        setDeepResult({});
-        setResearchers([]);
-
-        const controller = new AbortController();
-        abortRef.current = controller;
-
-        const history = getConversationHistory();
-        const res = await streamDeepResearch(
-          query,
-          enrichedQuery,
-          history,
-          controller.signal
-        );
-
-        const reader = res.body!.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
-        let eventType = "";
-
-        function processLine(line: string) {
-          if (line.startsWith("event: ")) {
-            eventType = line.slice(7).trim();
-          } else if (line.startsWith("data: ")) {
-            const raw = line.slice(6);
-            try {
-              const payload = JSON.parse(raw);
-
-              switch (eventType) {
-                case "log":
-                  setLogs((prev) => [...prev, payload]);
-                  break;
-                case "step":
-                  setDeepResult((prev) => ({
-                    ...prev,
-                    [payload.field]: payload.value,
-                  }));
-                  if (payload.field === "answer") {
-                    addAssistantMessage(payload.value);
-                    appendToHistory("user", query);
-                    appendToHistory("assistant", payload.value);
-                  }
-                  break;
-                case "researchers_init":
-                  setResearchers(
-                    payload.labels.map((label: string) => ({
-                      label,
-                      findings: "",
-                      done: false,
-                    }))
-                  );
-                  break;
-                case "researcher_done":
-                  setResearchers((prev) =>
-                    prev.map((r, i) =>
-                      i === payload.index
-                        ? { ...r, findings: payload.value, done: true }
-                        : r
-                    )
-                  );
-                  break;
-                case "error":
-                  setError(payload.error || "Deep research failed");
-                  break;
-              }
-            } catch {
-              // skip malformed JSON
-            }
-            eventType = "";
-          }
-        }
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-          const lines = buffer.split("\n");
-          buffer = lines.pop() ?? "";
-
-          for (const line of lines) {
-            processLine(line);
-          }
-        }
-
-        // Process any remaining data left in the buffer
-        if (buffer.trim()) {
-          processLine(buffer);
-        }
-
-        setDeepRunning(false);
-        setResearchPanelOpen(true);
-        abortRef.current = null;
-
-        // Delay persist so React renders first and refs sync via useEffect
-        setTimeout(() => persistExtras(), 300);
-      } else {
-        const isPro = searchMode === "quick-pro";
-        const history = getConversationHistory();
-        const data = await fetchQuickSearch(
-          query,
-          enrichedQuery,
-          isPro,
-          history
-        );
-        addAssistantMessage(data.answer);
-        appendToHistory("user", query);
-        appendToHistory("assistant", data.answer);
-        if (data.logs) {
-          setLogs((prev) => [...prev, ...data.logs]);
-          setTimeout(() => persistExtras(), 100);
-        }
-        // After a Flash (non-pro) search, show satisfaction check
-        if (!isPro) {
-          setSatisfaction("pending");
-          setEscalationContext({ query, context: enrichedQuery, previousAnswer: data.answer });
-        }
-      }
-    } catch {
-      setError("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }, [pendingConfirmation, searchMode, addAssistantMessage, appendToHistory, getConversationHistory, setLogs, setDeepResult, setResearchers, persistExtras]);
+  }, [session.messages, deepRunning, satisfaction]);
 
   async function handleSend(content: string) {
     if (sendingRef.current || loading) return;
@@ -416,10 +273,6 @@ export default function ChatSessionPage() {
     }
   }, [escalationContext, getConversationHistory, addAssistantMessage, appendToHistory, setLogs, persistExtras]);
 
-  function handleCancelConfirmation() {
-    setPendingConfirmation(null);
-  }
-
   if (!sessionLoaded) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -455,9 +308,7 @@ export default function ChatSessionPage() {
         {/* Messages */}
         <div className="flex-1 overflow-y-auto pb-44">
           <div className="max-w-3xl mx-auto px-4 py-6 pt-12 space-y-6">
-            {session.messages.length === 0 &&
-            !pendingConfirmation &&
-            !deepRunning ? (
+            {session.messages.length === 0 && !deepRunning ? (
               <EmptyState onSuggestionClick={handleSend} />
             ) : (
               <>
@@ -547,7 +398,7 @@ export default function ChatSessionPage() {
                 />
               )}
               <p className="text-center text-xs text-slate-400 mt-2">
-                Sponsored by the House of Majority Staff Office (HMSO)
+                Sponsored by the Hawaii State House of Representatives Majority Staff Office (HMSO)
               </p>
             </div>
           </div>

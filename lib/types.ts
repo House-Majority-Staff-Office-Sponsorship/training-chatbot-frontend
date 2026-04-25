@@ -64,13 +64,6 @@ export interface IntentResponse {
   logs?: LogEntry[];
 }
 
-export interface PendingConfirmation {
-  sessionId: string;
-  query: string;
-  enrichedQuery: string;
-  message: string;
-}
-
 // --- Redis persistence types ---
 
 export interface StoredMessage {
