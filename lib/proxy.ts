@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const BACKEND_URL =
-  process.env.BACKEND_URL || "https://training-chatbot-backend.vercel.app";
+  process.env.BACKEND_URL || "https://hmso-training.ics.hawaii.edu/backend";
 const BACKEND_API_KEY = process.env.BACKEND_API_KEY ?? "";
 
 /**

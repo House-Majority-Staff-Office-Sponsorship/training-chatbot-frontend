@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 const BACKEND_URL =
-  process.env.BACKEND_URL || "https://training-chatbot-backend.vercel.app";
+  process.env.BACKEND_URL || "hmso-training.ics.hawaii.edu/backend";
 
 export async function GET() {
   try {
