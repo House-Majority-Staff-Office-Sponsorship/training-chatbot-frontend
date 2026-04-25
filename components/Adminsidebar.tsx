@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { ADMIN_NAV_ITEMS } from "@/lib/admin";
 
@@ -13,6 +13,7 @@ interface AdminSidebarProps {
 
 const NAV_ICONS: Record<string, React.ReactNode> = {
   conversations: <MessageSquare size={15} />,
+  quizzes: <GraduationCap size={15} />,
 };
 
 export default function AdminSidebar({

@@ -128,3 +128,79 @@ export async function deleteQuiz(
   pipeline.zrem(userQuizzesKey(anonId), quizId);
   await pipeline.exec();
 }
+
+export type AdminQuizSummary = StoredQuiz & { anonId: string };
+
+export interface PaginatedQuizzes {
+  quizzes: AdminQuizSummary[];
+  nextCursor: string | null;
+}
+
+/**
+ * Cursor-paginated SCAN over every user's quizzes. Mirrors the conversation
+ * admin pagination so a single page completes quickly.
+ */
+export async function listAllQuizzes({
+  cursor = 0,
+  pageSize = 50,
+}: {
+  cursor?: string | number;
+  pageSize?: number;
+} = {}): Promise<PaginatedQuizzes> {
+  const byQuizId = new Map<string, AdminQuizSummary>();
+  const visitedUserKeys = new Set<string>();
+  let nextCursor: string | number = cursor;
+
+  do {
+    const scanRes = (await redis.scan(nextCursor, {
+      match: "user:*:quizzes",
+      count: 100,
+    })) as [string | number, string[]];
+    nextCursor = scanRes[0];
+    const keys = scanRes[1];
+
+    const newKeys = keys.filter((k) => {
+      if (visitedUserKeys.has(k)) return false;
+      visitedUserKeys.add(k);
+      return true;
+    });
+
+    const userBatches = await Promise.all(
+      newKeys.map(async (userKey) => {
+        const anonId = userKey.slice("user:".length, -":quizzes".length);
+        const ids = await redis.zrange<string[]>(userKey, 0, -1, { rev: true });
+        if (!ids || ids.length === 0) return [] as AdminQuizSummary[];
+
+        const pipeline = redis.pipeline();
+        for (const id of ids) pipeline.get(quizKey(id));
+        const results = await pipeline.exec<(StoredQuiz | null)[]>();
+
+        const out: AdminQuizSummary[] = [];
+        for (const data of results) {
+          if (data) out.push({ ...data, anonId });
+        }
+        return out;
+      })
+    );
+
+    for (const batch of userBatches) {
+      for (const q of batch) {
+        if (!byQuizId.has(q.id)) byQuizId.set(q.id, q);
+      }
+    }
+  } while (
+    nextCursor !== 0 &&
+    nextCursor !== "0" &&
+    byQuizId.size < pageSize
+  );
+
+  const done = nextCursor === 0 || nextCursor === "0";
+  const quizzes = Array.from(byQuizId.values()).sort(
+    (a, b) => b.updatedAt - a.updatedAt
+  );
+
+  return {
+    quizzes,
+    nextCursor: done ? null : String(nextCursor),
+  };
+}
