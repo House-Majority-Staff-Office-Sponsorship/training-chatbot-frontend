@@ -127,3 +127,12 @@ body {
   h1, h2 { font-size: 0.85rem; }
   h3, h4 { font-size: 0.8rem; }
 }
+
+/* ── Thinking shimmer (used by ThinkingIndicator) ── */
+@keyframes thinking-shimmer {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+.thinking-shimmer {
+  animation: thinking-shimmer 1.4s ease-in-out infinite;
+}

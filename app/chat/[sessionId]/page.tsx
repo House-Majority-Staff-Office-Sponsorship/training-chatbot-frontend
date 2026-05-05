@@ -71,6 +71,26 @@ export default function ChatSessionPage() {
   const [researchPanelOpen, setResearchPanelOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
+  // Which assistant message is currently mid-typing-animation (only ever one).
+  const [typingMessageId, setTypingMessageId] = useState<string | null>(null);
+
+  // Track when the assistant started "thinking" so we can show
+  // "Thought for Xs" on the resulting message.
+  const thinkingStartRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (loading || deepRunning) {
+      if (thinkingStartRef.current === null) {
+        thinkingStartRef.current = Date.now();
+      }
+    } else {
+      thinkingStartRef.current = null;
+    }
+  }, [loading, deepRunning]);
+  function elapsedThinkingMs(): number | undefined {
+    if (thinkingStartRef.current === null) return undefined;
+    return Date.now() - thinkingStartRef.current;
+  }
+
   // Wake the backend while the user reads / types so the first chat
   // request doesn't pay a cold-start penalty.
   useEffect(() => {
@@ -130,8 +150,9 @@ export default function ChatSessionPage() {
 
       switch (intent.action) {
         case "reject":
-        case "clarify":
-          addAssistantMessage(intent.message);
+        case "clarify": {
+          const m = addAssistantMessage(intent.message, elapsedThinkingMs());
+          setTypingMessageId(m.id);
           appendToHistory("user", content);
           appendToHistory("assistant", intent.message);
           // addAssistantMessage persisted the historyCache *before* the
@@ -140,11 +161,13 @@ export default function ChatSessionPage() {
           setTimeout(() => persistExtras(), 100);
           setLoading(false);
           return;
+        }
 
         case "chat": {
           const chatHistory = getConversationHistory();
           const data = await fetchConversational(content, chatHistory);
-          addAssistantMessage(data.answer);
+          const m = addAssistantMessage(data.answer, elapsedThinkingMs());
+          setTypingMessageId(m.id);
           appendToHistory("user", content);
           appendToHistory("assistant", data.answer);
           if (data.logs) {
@@ -180,7 +203,8 @@ export default function ChatSessionPage() {
                     case "step":
                       setDeepResult((prev) => ({ ...prev, [payload.field]: payload.value }));
                       if (payload.field === "answer") {
-                        addAssistantMessage(payload.value);
+                        const m = addAssistantMessage(payload.value, elapsedThinkingMs());
+                        setTypingMessageId(m.id);
                         appendToHistory("user", content);
                         appendToHistory("assistant", payload.value);
                       }
@@ -214,7 +238,8 @@ export default function ChatSessionPage() {
             const isPro = searchMode === "quick-pro";
             const history = getConversationHistory();
             const data = await fetchQuickSearch(content, enrichedQuery, isPro, history);
-            addAssistantMessage(data.answer);
+            const m = addAssistantMessage(data.answer, elapsedThinkingMs());
+            setTypingMessageId(m.id);
             appendToHistory("user", content);
             appendToHistory("assistant", data.answer);
             if (data.logs) {
@@ -258,7 +283,8 @@ export default function ChatSessionPage() {
         escalationContext.previousAnswer,
         history
       );
-      addAssistantMessage(data.answer);
+      const m = addAssistantMessage(data.answer, elapsedThinkingMs());
+      setTypingMessageId(m.id);
       appendToHistory("assistant", data.answer);
       if (data.logs) {
         setLogs((prev) => [...prev, ...data.logs]);
@@ -307,7 +333,7 @@ export default function ChatSessionPage() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto pb-44">
-          <div className="max-w-3xl mx-auto px-4 py-6 pt-12 space-y-6">
+          <div className="max-w-4xl mx-auto px-4 py-6 pt-12 space-y-6">
             {session.messages.length === 0 && !deepRunning ? (
               <EmptyState onSuggestionClick={handleSend} />
             ) : (
@@ -317,6 +343,8 @@ export default function ChatSessionPage() {
                     key={msg.id}
                     message={msg}
                     onToggleFlag={toggleFlag}
+                    isTyping={msg.id === typingMessageId}
+                    onTypingComplete={() => setTypingMessageId(null)}
                   />
                 ))}
                 {deepRunning && (
@@ -351,12 +379,9 @@ export default function ChatSessionPage() {
               </div>
             )}
 
-            {/* Escalation in progress */}
+            {/* Escalation in progress — same indicator, deeper-search label */}
             {satisfaction === "escalated" && loading && (
-              <div className="flex gap-3">
-                <div className="w-8 flex-shrink-0" />
-                <span className="text-xs text-cyan-600">Searching deeper with Pro model...</span>
-              </div>
+              <ThinkingIndicator label="Searching deeper" />
             )}
 
             {/* Loading indicator with timer */}
@@ -376,7 +401,7 @@ export default function ChatSessionPage() {
         {/* Floating input */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <div className="bg-gradient-to-t from-slate-50 from-60% to-transparent pt-8 pb-4 pointer-events-auto">
-            <div className="max-w-3xl mx-auto px-4">
+            <div className="max-w-4xl mx-auto px-4">
               {atLimit ? (
                 <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
                   <p className="text-sm text-amber-800">
@@ -427,7 +452,7 @@ export default function ChatSessionPage() {
   );
 }
 
-function ThinkingIndicator() {
+function ThinkingIndicator({ label = "Thinking" }: { label?: string }) {
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {
@@ -435,7 +460,8 @@ function ThinkingIndicator() {
     return () => clearInterval(id);
   }, []);
 
-  const label = elapsed < 60 ? `${elapsed}s` : `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
+  const timeLabel =
+    elapsed < 60 ? `${elapsed}s` : `${Math.floor(elapsed / 60)}m ${elapsed % 60}s`;
 
   return (
     <div className="flex gap-3">
@@ -443,13 +469,13 @@ function ThinkingIndicator() {
         AI
       </div>
       <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-sm px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1.5 items-center">
-            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:0ms]" />
-            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:150ms]" />
-            <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce [animation-delay:300ms]" />
-          </div>
-          <span className="text-xs text-slate-400 font-mono tabular-nums">{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-slate-500 thinking-shimmer">
+            {label}
+          </span>
+          <span className="text-xs text-slate-400 font-mono tabular-nums">
+            {timeLabel}
+          </span>
         </div>
       </div>
     </div>

@@ -217,12 +217,13 @@ export function useSingleSession(sessionId: string) {
 
   /** Add an assistant message and persist everything to Redis. */
   const addAssistantMessage = useCallback(
-    (content: string): Message => {
+    (content: string, thinkingMs?: number): Message => {
       const msg: Message = {
         id: crypto.randomUUID(),
         role: "assistant",
         content,
         timestamp: new Date(),
+        ...(thinkingMs && thinkingMs > 0 ? { thinkingMs } : {}),
       };
       setSession((prev) => {
         const updated = {

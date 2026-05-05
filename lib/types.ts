@@ -4,6 +4,8 @@ export interface Message {
   content: string;
   timestamp: Date;
   flagged?: boolean;
+  /** Milliseconds the assistant spent generating this message (loading → response). */
+  thinkingMs?: number;
 }
 
 export interface ChatSession {
